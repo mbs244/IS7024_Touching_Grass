@@ -21,7 +21,7 @@ Conserve water while growing healthier plants by making more informed watering d
 Simply enter your California ZIP code, select your plants, and let PlantWise help you estimate how much water they need based on local conditions. Make every drop count with smarter, climate-aware plant care! 
 
 # Icon/Logo 
-![PlantWise Logo] (plant_wise_logo.png)
+![PlantWise Logo](plant_wise_logo.png)
 
  
 
