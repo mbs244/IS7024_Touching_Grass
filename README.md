@@ -1,10 +1,10 @@
-Introduction 
+# Introduction
 
-PlantWise — Water smarter. Grow better. 
+# PlantWise — Water smarter. Grow better. 
 
 Do you know how much water your plants need in California's changing climate? Are you watering too much or too little based on the weather? PlantWise helps California gardeners make informed watering decisions based on their location, plant water requirements, and local weather conditions. 
 
-PlantWise can help you: 
+# PlantWise can help you: 
 
 Get personalized watering recommendations based on your ZIP code, selected plants, and local weather. 
 
@@ -20,15 +20,14 @@ Conserve water while growing healthier plants by making more informed watering d
 
 Simply enter your California ZIP code, select your plants, and let PlantWise help you estimate how much water they need based on local conditions. Make every drop count with smarter, climate-aware plant care! 
 
-Icon/Logo 
+# Icon/Logo 
+![PlantWise Logo] (plant_wise_logo.png)
 
  
 
- 
+# Requirements 
 
-Requirements 
-
-1. Take ZIP code as an input 
+# 1. Take ZIP code as an input 
 
 As a user, I want to enter my ZIP code so that I can receive watering estimates for my location. 
 
@@ -40,7 +39,7 @@ Given the ZIP code field is empty, When I submit the form, Then the app should d
 
 Given watering estimates are only supported for California, when I enter Ohio ZIP code “45236,” Then the app should explain that watering estimates are unavailable for that location. 
 
-2. Take plants as input 
+# 2. Take plants as input 
 
 As a user, I want to search for and add my plants by common or scientific name so that I can get watering recommendations for each plant. 
 
@@ -60,7 +59,7 @@ Given Toyon and California Poppy are in my plant list, when I click “Remove”
 
 Given Symplocarpus foetidus (Eastern Skunk Cabbage) is not in the plant database, When I search for “Skunk Cabbage”, Then I should see the message “This plant is not in our California plant database.” 
 
-3. Automatically gather Weather Data 
+# 3. Automatically gather Weather Data 
 
 As a user, I want the zip code I entered to automatically pull weather data so that the expected water gain/loss in the soil can be translated into watering needs. 
 
@@ -70,7 +69,7 @@ Given “95814” is accepted as a valid zip code input, When I submit my query,
 
 Given only California zip codes are accepted, when I enter Ohio ZIP code “45236,” Then the validation rules will prevent the query prior to receiving weather data. 
 
-4. Automatically calculate water needs 
+# 4. Automatically calculate water needs 
 
 As a user, once I input the zip code and plant, the system should automatically provide the water use needs. 
 
@@ -88,7 +87,7 @@ Given “94104” is accepted as a valid ZIP code input, the plant requires 40-6
 
  
 
-Data sources 
+# Data sources 
 
 USDA Plant Hardiness Zone Maps: 
 
@@ -102,7 +101,7 @@ Json API: https://phzmapi.org/
 
  
 
-WUCOLS Plant Database 
+# WUCOLS Plant Database 
 
 https://wucols.ucdavis.edu/plant-search-database 
 
@@ -112,7 +111,7 @@ Dataset is a download to csv
 
  
 
-NOAA Evapotranspiration 
+# NOAA Evapotranspiration 
 
 NOAA website: 
 
@@ -123,7 +122,7 @@ https://open-meteo.com/en/docs/gfs-api?hourly=evapotranspiration
 
  
 
-Database 
+# Database 
 
 Our database will store plant information, location details, and weather data used to calculate watering needs. 
 
@@ -139,7 +138,7 @@ The app will use the entered ZIP code to find the location and its region. It wi
 
  
 
-Team Composition 
+# Team Composition 
 
 As a team, we plan to conduct our standup every week Friday afternoons before our Seminar as a regularly scheduled MS Teams call. 
 
