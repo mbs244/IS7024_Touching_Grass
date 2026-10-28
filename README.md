@@ -1,24 +1,23 @@
-# PlantWise 
+# PlantWise — Water smarter. Grow better. 
 
 # Introduction
 
-# PlantWise — Water smarter. Grow better. 
 
 Do you know how much water your plants need in California's changing climate? Are you watering too much or too little based on the weather? PlantWise helps California gardeners make informed watering decisions based on their location, plant water requirements, and local weather conditions. 
 
 # PlantWise can help you: 
 
-Get personalized watering recommendations based on your ZIP code, selected plants, and local weather. 
+- Get personalized watering recommendations based on your ZIP code, selected plants, and local weather. 
 
-Identify your climate zone using USDA Plant Hardiness Zone data and relevant California climate information. 
+- Identify your climate zone using USDA Plant Hardiness Zone data and relevant California climate information. 
 
-Discover plant-specific water needs using the WUCOLS database of California landscape plants. 
+- Discover plant-specific water needs using the WUCOLS database of California landscape plants. 
 
-Understand recent weather conditions by analyzing rainfall and evapotranspiration to estimate environmental water loss. 
+- Understand recent weather conditions by analyzing rainfall and evapotranspiration to estimate environmental water loss. 
 
-Plan upcoming watering using weather forecasts to help adjust recommendations as conditions change. 
+- Plan upcoming watering using weather forecasts to help adjust recommendations as conditions change. 
 
-Conserve water while growing healthier plants by making more informed watering decisions. 
+- Conserve water while growing healthier plants by making more informed watering decisions. 
 
 Simply enter your California ZIP code, select your plants, and let PlantWise help you estimate how much water they need based on local conditions. Make every drop count with smarter, climate-aware plant care! 
 
@@ -148,8 +147,11 @@ As a team, we plan to conduct our standup every week Friday afternoons before ou
 
 # Weekly Meeting 
 **Day:** Friday
+
 **Time:** 12 pm
+
 **Format:** In-person or Microsoft Teams 
+
 During each meeting, we will:
   - Review our work
   - Update GitHub
