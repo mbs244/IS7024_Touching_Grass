@@ -1,0 +1,150 @@
+classDiagram
+    direction TB
+
+    class PlantWateringPageModel {
+        <<Razor Page Model>>
+        +string SelectedPlantName
+        +string ZipCode
+        +decimal? WateringResult
+        +string? ErrorMessage
+        +void OnGet()
+        +Task~IActionResult~ OnPost()
+    }
+
+    class WateringCalculatorService {
+        -IPlantRepository plantRepository
+        -ILocationService locationService
+        -IWeatherService weatherService
+        +Task~WateringResult~ CalculateWateringAmount(string plantName, string zipCode)
+        -decimal ApplyCalculation(Plant plant, double evapotranspiration, double rainfall)
+    }
+
+    class IPlantRepository {
+        <<interface>>
+        +Task~List~Plant~~ GetAllPlants()
+        +Task~Plant?~ GetByName(string name)
+    }
+
+    class PlantRepository {
+        -ApplicationDbContext context
+        +Task~List~Plant~~ GetAllPlants()
+        +Task~Plant?~ GetByName(string name)
+    }
+
+    class ILocationService {
+        <<interface>>
+        +Task~Location~ GetLocation(string zipCode)
+    }
+
+    class ZipCodeLocationService {
+        -ApplicationDbContext context
+        +Task~Location~ GetLocation(string zipCode)
+    }
+
+    class IWeatherService {
+        <<interface>>
+        +Task~double~ GetEvapotranspiration(double latitude, double longitude)
+        +Task~double~ GetRecentRainfall(double latitude, double longitude)
+    }
+
+    class WeatherService {
+        -OpenMeteoClient openMeteoClient
+        -VisualCrossingClient visualCrossingClient
+        +Task~double~ GetEvapotranspiration(double latitude, double longitude)
+        +Task~double~ GetRecentRainfall(double latitude, double longitude)
+    }
+
+    class OpenMeteoClient {
+        -HttpClient httpClient
+        +Task~double~ GetEvapotranspiration(double latitude, double longitude)
+    }
+
+    class VisualCrossingClient {
+        -HttpClient httpClient
+        +Task~double~ GetRecentRainfall(double latitude, double longitude)
+    }
+
+    class OpenMeteoGfsApi {
+        <<External API>>
+        +Get hourly evapotranspiration
+        +Input latitude and longitude
+    }
+
+    class VisualCrossingWeatherApi {
+        <<External API>>
+        +Get recent rainfall
+        +Input latitude and longitude
+    }
+
+    class ApplicationDbContext {
+        <<EF Core DbContext>>
+        +DbSet~Plant~ Plants
+        +DbSet~PlantWaterFactor~ PlantWaterFactors
+        +DbSet~ZipCodeLocation~ ZipCodeLocations
+    }
+
+    class Plant {
+        +int Id
+        +string BotanicalName
+        +string CommonName
+        +string Type
+        +List~PlantWaterFactor~ WaterFactors
+    }
+
+    class PlantWaterFactor {
+        +int Id
+        +int PlantId
+        +int Region
+        +string WaterUse
+        +string ET0Range
+        +decimal? PlantFactor
+    }
+
+    class ZipCodeLocation {
+        +string ZipCode
+        +double Latitude
+        +double Longitude
+    }
+
+    class Location {
+        +double Latitude
+        +double Longitude
+    }
+
+    class WateringResult {
+        +string PlantName
+        +string ZipCode
+        +double Evapotranspiration
+        +double RecentRainfall
+        +decimal PlantFactor
+        +decimal GrossWaterNeed
+        +decimal NetWateringAmount
+        +string Unit
+    }
+
+    PlantWateringPageModel --> WateringCalculatorService : uses
+
+    WateringCalculatorService --> IPlantRepository : retrieves plant data
+    WateringCalculatorService --> ILocationService : resolves ZIP code
+    WateringCalculatorService --> IWeatherService : retrieves weather data
+    WateringCalculatorService --> WateringResult : creates
+
+    IPlantRepository <|.. PlantRepository : implements
+    ILocationService <|.. ZipCodeLocationService : implements
+    IWeatherService <|.. WeatherService : implements
+
+    PlantRepository --> ApplicationDbContext : uses
+    ZipCodeLocationService --> ApplicationDbContext : uses
+    ZipCodeLocationService --> Location : returns
+
+    WeatherService --> OpenMeteoClient : uses
+    WeatherService --> VisualCrossingClient : uses
+
+    OpenMeteoClient ..> OpenMeteoGfsApi : HTTP request
+    VisualCrossingClient ..> VisualCrossingWeatherApi : HTTP request
+
+    ApplicationDbContext "1" o-- "0..*" Plant : stores
+    ApplicationDbContext "1" o-- "0..*" PlantWaterFactor : stores
+    ApplicationDbContext "1" o-- "0..*" ZipCodeLocation : stores
+
+    Plant "1" *-- "0..*" PlantWaterFactor : has
