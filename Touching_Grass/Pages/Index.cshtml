@@ -1,10 +1,41 @@
-﻿@page
+@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "PlantWise Watering Recommendation";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1 class="display-5">PlantWise</h1>
+        <p class="lead">Get a weekly watering estimate for a California plant.</p>
+
+        <form method="post" class="card shadow-sm" id="watering-form">
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="ZipCode" class="form-label"></label>
+                    <input asp-for="ZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" aria-describedby="zip-help" />
+                    <div id="zip-help" class="form-text">Enter a supported five-digit California ZIP code.</div>
+                    <span asp-validation-for="ZipCode" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PlantName" class="form-label"></label>
+                    <input asp-for="PlantName" class="form-control" autocomplete="off" />
+                    <div class="form-text">Use a common or scientific plant name, such as Toyon.</div>
+                    <span asp-validation-for="PlantName" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary" data-submit-button>
+                    <span data-submit-label>Calculate watering need</span>
+                    <span class="spinner-border spinner-border-sm d-none" aria-hidden="true" data-submit-spinner></span>
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

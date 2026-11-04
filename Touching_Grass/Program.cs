@@ -1,7 +1,14 @@
+using Touching_Grass.Repositories;
+using Touching_Grass.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<JsonDataLoader>();
+builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
+builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
+builder.Services.AddSingleton<IWateringCalculatorService, WateringCalculatorService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,20 @@
+[
+  {
+    "Id": 1,
+    "CommonName": "Toyon",
+    "ScientificName": "Heteromeles arbutifolia",
+    "WaterFactor": 0.40
+  },
+  {
+    "Id": 2,
+    "CommonName": "California Poppy",
+    "ScientificName": "Eschscholzia californica",
+    "WaterFactor": 0.30
+  },
+  {
+    "Id": 3,
+    "CommonName": "Red Maple",
+    "ScientificName": "Acer rubrum",
+    "WaterFactor": 0.50
+  }
+]

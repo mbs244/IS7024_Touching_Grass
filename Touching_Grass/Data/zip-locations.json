@@ -1,0 +1,20 @@
+[
+  {
+    "ZipCode": "95814",
+    "Latitude": 38.5816,
+    "Longitude": -121.4944,
+    "TimeZoneId": "America/Los_Angeles"
+  },
+  {
+    "ZipCode": "94104",
+    "Latitude": 37.7898,
+    "Longitude": -122.4010,
+    "TimeZoneId": "America/Los_Angeles"
+  },
+  {
+    "ZipCode": "92101",
+    "Latitude": 32.7157,
+    "Longitude": -117.1611,
+    "TimeZoneId": "America/Los_Angeles"
+  }
+]

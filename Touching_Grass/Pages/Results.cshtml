@@ -1,0 +1,52 @@
+@page
+@model ResultsModel
+@{
+    ViewData["Title"] = "Watering Recommendation";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <h1 class="display-6">Watering recommendation</h1>
+
+        @if (Model.Recommendation is null)
+        {
+            <div class="alert alert-warning" role="alert">
+                @Model.ErrorMessage
+            </div>
+            <a asp-page="/Index" class="btn btn-primary">Start a new lookup</a>
+        }
+        else
+        {
+            <div class="card shadow-sm mb-3" aria-labelledby="recommendation-heading">
+                <div class="card-body">
+                    <h2 id="recommendation-heading" class="h4">@Model.Recommendation.PlantDisplayName</h2>
+                    <p class="text-muted mb-3">ZIP code: @Model.Recommendation.ZipCode</p>
+                    <p class="display-6">@Model.Recommendation.NetNeedInches.ToString("0.00") in</p>
+                    <p class="lead">additional watering needed this week</p>
+                    <p class="mb-0">@Model.Recommendation.Explanation</p>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h2 class="h5">How this was calculated</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-7">Evapotranspiration</dt>
+                        <dd class="col-sm-5">@Model.Recommendation.EvapotranspirationInches.ToString("0.00") in</dd>
+                        <dt class="col-sm-7">Plant water factor</dt>
+                        <dd class="col-sm-5">@Model.Recommendation.PlantFactor.ToString("0.00")</dd>
+                        <dt class="col-sm-7">Gross water need</dt>
+                        <dd class="col-sm-5">@Model.Recommendation.GrossNeedInches.ToString("0.00") in</dd>
+                        <dt class="col-sm-7">Rainfall</dt>
+                        <dd class="col-sm-5">− @Model.Recommendation.RainfallInches.ToString("0.00") in</dd>
+                        <dt class="col-sm-7">Net watering need</dt>
+                        <dd class="col-sm-5">@Model.Recommendation.NetNeedInches.ToString("0.00") in</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <p class="small text-muted">This estimate uses temporary mock weather values for the first PlantWise vertical slice.</p>
+            <a asp-page="/Index" class="btn btn-outline-primary">Calculate another plant</a>
+        }
+    </div>
+</div>
