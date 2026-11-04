@@ -17,7 +17,7 @@
 - [x] T006 Create `Touching_Grass/Models/ZipLocation.cs` with required five-digit `ZipCode`, `Latitude`, `Longitude`, and `TimeZoneId` properties.
 - [x] T007 Create `Touching_Grass/Models/WaterRecommendation.cs` with ZIP code, plant display name, weekly evapotranspiration inches, weekly rainfall inches, plant factor, gross need, net need, and explanation properties.
 - [x] T008 Create `Touching_Grass/Services/IZipLookupService.cs`, `Touching_Grass/Repositories/IPlantRepository.cs`, and `Touching_Grass/Services/IWateringCalculatorService.cs` with asynchronous, cancellation-aware contracts.
-- [x] T009 Create `Touching_Grass/Data/zip-locations.json` with representative supported ZIP records including a known Sacramento test ZIP and local timezone values.
+- [ ] T009 Replace representative ZIP records with the approved nationwide USA ZIP dataset, including coordinates and IANA timezone values for every supported ZIP.
 - [x] T010 Create `Touching_Grass/Data/plants.json` with representative plant records including common names, scientific names, and decimal water factors.
 - [x] T011 Create `Touching_Grass/Services/JsonDataLoader.cs` to load and deserialize local JSON data without network access, returning actionable initialization errors for missing or malformed files.
 - [x] T012 Register JSON data loading, `IZipLookupService`, `IPlantRepository`, and `IWateringCalculatorService` in `Touching_Grass/Program.cs` using scoped or singleton lifetimes appropriate to immutable local data.

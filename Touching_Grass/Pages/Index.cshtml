@@ -7,7 +7,7 @@
 <div class="row justify-content-center">
     <div class="col-lg-8">
         <h1 class="display-5">PlantWise</h1>
-        <p class="lead">Get a weekly watering estimate for a California plant.</p>
+        <p class="lead">Get a weekly watering estimate for a plant anywhere in the United States.</p>
 
         <form method="post" class="card shadow-sm" id="watering-form">
             <div class="card-body">
@@ -16,7 +16,7 @@
                 <div class="mb-3">
                     <label asp-for="ZipCode" class="form-label"></label>
                     <input asp-for="ZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" aria-describedby="zip-help" />
-                    <div id="zip-help" class="form-text">Enter a supported five-digit California ZIP code.</div>
+                    <div id="zip-help" class="form-text">Enter a supported five-digit USA ZIP code.</div>
                     <span asp-validation-for="ZipCode" class="text-danger"></span>
                 </div>
 

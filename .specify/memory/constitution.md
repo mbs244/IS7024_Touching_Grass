@@ -50,7 +50,7 @@ weather lookups and recommendations usable on ordinary connections.
 
 ### V. Maintainable Simplicity
 Features MUST solve the stated PlantWise user need with the smallest understandable
-design. Domain rules for California locations, WUCOLS plant needs, rainfall,
+design. Domain rules for USA locations, plant water needs, rainfall,
 evapotranspiration, and calculations MUST remain explicit and separated from page
 presentation and external-service plumbing. New dependencies, abstractions, and cached
 data MUST have a documented benefit and a clear ownership or invalidation strategy.

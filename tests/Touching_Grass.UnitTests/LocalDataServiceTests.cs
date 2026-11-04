@@ -18,6 +18,18 @@ public sealed class LocalDataServiceTests
     }
 
     [Fact]
+    public async Task ZipLookupFindsSupportedNonCaliforniaLocation()
+    {
+        using var fixture = new LocalDataFixture();
+        var service = new ZipLookupService(fixture.Loader);
+
+        var result = await service.FindAsync("45236");
+
+        Assert.NotNull(result);
+        Assert.Equal("America/New_York", result.TimeZoneId);
+    }
+
+    [Fact]
     public async Task ZipLookupReturnsNullForMalformedOrUnsupportedZip()
     {
         using var fixture = new LocalDataFixture();
@@ -62,7 +74,7 @@ public sealed class LocalDataServiceTests
             var dataDirectory = Path.Combine(_root, "Data");
             Directory.CreateDirectory(dataDirectory);
             File.WriteAllText(Path.Combine(dataDirectory, "zip-locations.json"), """
-                [{"ZipCode":"95814","Latitude":38.5816,"Longitude":-121.4944,"TimeZoneId":"America/Los_Angeles"}]
+                [{"ZipCode":"95814","Latitude":38.5816,"Longitude":-121.4944,"TimeZoneId":"America/Los_Angeles"},{"ZipCode":"45236","Latitude":39.2351,"Longitude":-84.3533,"TimeZoneId":"America/New_York"}]
                 """);
             File.WriteAllText(Path.Combine(dataDirectory, "plants.json"), """
                 [{"Id":1,"CommonName":"Toyon","ScientificName":"Heteromeles arbutifolia","WaterFactor":0.40}]

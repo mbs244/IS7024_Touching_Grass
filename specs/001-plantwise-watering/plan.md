@@ -47,8 +47,9 @@ all stages fail closed on missing required data, validate before provider calls,
 bounded HTTP timeouts and cancellation when providers are introduced, protect credentials,
 and use explicit weekly-inch units with decimal calculation arithmetic
 
-**Scale/Scope**: Current slice is one primary lookup page with local reference datasets and
-mock weather; the target feature adds two weather providers. Accounts, saved history,
+**Scale/Scope**: Current slice is one primary lookup page with a nationwide USA ZIP
+reference dataset, local plant data, and mock weather; the target feature adds two weather
+providers. Accounts, saved history,
 notifications, and recommendation persistence remain out of scope.
 
 ## Constitution Check

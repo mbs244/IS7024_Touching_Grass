@@ -35,8 +35,8 @@ below remain the target behavior for the full feature.
 
 ### User Story 1 - Submit a watering lookup (Priority: P1)
 
-As a California gardener, I want to enter my ZIP code and plant name so that PlantWise
-can provide a location-specific watering recommendation.
+As a gardener anywhere in the United States, I want to enter my ZIP code and plant name
+so that PlantWise can provide a location-specific watering recommendation.
 
 **Why this priority**: This is the primary user value and the smallest complete journey.
 

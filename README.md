@@ -3,13 +3,13 @@
 # Introduction
 
 
-Do you know how much water your plants need in California's changing climate? Are you watering too much or too little based on the weather? PlantWise helps California gardeners make informed watering decisions based on their location, plant water requirements, and local weather conditions. 
+Do you know how much water your plants need in the changing climate across the United States? Are you watering too much or too little based on the weather? PlantWise helps gardeners make informed watering decisions based on their location, plant water requirements, and local weather conditions. 
 
 # PlantWise can help you: 
 
 - Get personalized watering recommendations based on your ZIP code, selected plants, and local weather. 
 
-- Identify your climate zone using USDA Plant Hardiness Zone data and relevant California climate information. 
+- Identify your climate zone using USDA Plant Hardiness Zone data and relevant local climate information. 
 
 - Discover plant-specific water needs using the WUCOLS database of California landscape plants. 
 
@@ -19,7 +19,7 @@ Do you know how much water your plants need in California's changing climate? Ar
 
 - Conserve water while growing healthier plants by making more informed watering decisions. 
 
-Simply enter your California ZIP code, select your plants, and let PlantWise help you estimate how much water they need based on local conditions. Make every drop count with smarter, climate-aware plant care! 
+Simply enter your USA ZIP code, select your plants, and let PlantWise help you estimate how much water they need based on local conditions. Make every drop count with smarter, climate-aware plant care! 
 
 # Icon/Logo 
 ![PlantWise Logo](plant_wise_logo.png)
@@ -38,7 +38,7 @@ Simply enter your California ZIP code, select your plants, and let PlantWise hel
 
 - Given the ZIP code field is empty, When I submit the form, Then the app should display “ZIP code is required.” 
 
-Given watering estimates are only supported for California, when I enter Ohio ZIP code “45236,” Then the app should explain that watering estimates are unavailable for that location. 
+Given Ohio ZIP code “45236” is present in the national ZIP dataset, when I enter “45236,” Then the app should identify the location and continue the watering lookup. 
 
 # 2. Take plants as input 
 
@@ -58,7 +58,7 @@ Given watering estimates are only supported for California, when I enter Ohio ZI
 
 - Given Toyon and California Poppy are in my plant list, when I click “Remove” next to California Poppy, then only Toyon should remain in my list. 
 
-- Given Symplocarpus foetidus (Eastern Skunk Cabbage) is not in the plant database, When I search for “Skunk Cabbage”, Then I should see the message “This plant is not in our California plant database.” 
+- Given Symplocarpus foetidus (Eastern Skunk Cabbage) is not in the plant database, When I search for “Skunk Cabbage”, Then I should see the message “This plant is not in our supported plant database.” 
 
 # 3. Automatically gather Weather Data 
 
@@ -68,7 +68,7 @@ Given watering estimates are only supported for California, when I enter Ohio ZI
 
 - Given “95814” is accepted as a valid zip code input, When I submit my query, Then evapotranspiration totals will be outputted. 
 
-- Given only California zip codes are accepted, when I enter Ohio ZIP code “45236,” Then the validation rules will prevent the query prior to receiving weather data. 
+- Given all USA ZIP codes are accepted, when I enter a valid five-digit Ohio ZIP code such as “45236,” Then the validation rules will allow the query to continue when the ZIP is present in the national dataset. 
 
 # 4. Automatically calculate water needs 
 
