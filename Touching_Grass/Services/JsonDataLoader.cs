@@ -67,7 +67,6 @@ public sealed class JsonDataLoader
             var locations = records.Cast<ZipLocation>().ToList();
             if (locations.Any(location => location.ZipCode.Length != 5 ||
                                           location.ZipCode.Any(character => !char.IsDigit(character)) ||
-                                          string.IsNullOrWhiteSpace(location.TimeZoneId) ||
                                           location.Latitude is < -90 or > 90 ||
                                           location.Longitude is < -180 or > 180))
             {
