@@ -28,7 +28,7 @@ VisualCrossingService.GetWeeklyRainfallAsync(location, cancellationToken)
   -> WeatherObservation or ProviderFailure
 
 WateringCalculatorService.Calculate(location, plant, et, rainfall)
-  -> WateringRecommendation
+	-> WaterRecommendation
 ```
 
 All external and database operations are asynchronous and cancellation-aware. Services

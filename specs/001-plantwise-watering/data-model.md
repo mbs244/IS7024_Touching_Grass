@@ -41,7 +41,7 @@ A plant has one selectable factor for this feature. If the imported source conta
 multiple applicable records, the import process MUST resolve them explicitly or mark the
 plant ambiguous so the application never chooses arbitrarily.
 
-### WateringRecommendation
+### WaterRecommendation
 
 A request-scoped result object, not persisted in the first release.
 
@@ -112,7 +112,7 @@ classDiagram
 	class IndexModel {
 		+string ZipCode
 		+string PlantName
-		+WateringRecommendationViewModel? Recommendation
+		+WaterRecommendation? Recommendation
 		+string? ErrorMessage
 		+Task~IActionResult~ OnPostAsync()
 	}
@@ -138,7 +138,7 @@ classDiagram
 	}
 
 	class WateringCalculatorService {
-		+Task~WateringRecommendation~ CalculateAsync(ZipLocation, Plant, WeatherObservation, WeatherObservation)
+		+Task~WaterRecommendation~ CalculateAsync(ZipLocation, Plant, WeatherObservation, WeatherObservation)
 	}
 
 	class ApplicationDbContext {
@@ -147,7 +147,7 @@ classDiagram
 		+DbSet~PlantWaterFactor~ PlantWaterFactors
 	}
 
-	class WateringRecommendation {
+	class WaterRecommendation {
 		+decimal NetNeedInches
 		+decimal GrossNeedInches
 		+decimal RainfallInches
@@ -163,7 +163,7 @@ classDiagram
 	PlantRepository ..|> IPlantRepository
 	ZipLookupService --> ApplicationDbContext
 	PlantRepository --> ApplicationDbContext
-	WateringCalculatorService --> WateringRecommendation
+	WateringCalculatorService --> WaterRecommendation
 ```
 
 The existing root `classDiagram.mmd` can be reconciled with this design during

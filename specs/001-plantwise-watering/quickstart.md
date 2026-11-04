@@ -16,7 +16,7 @@ Touching_Grass.slnx
 	│   ├── PlantWaterFactor.cs
 	│   ├── ZipLocation.cs
 	│   ├── WeatherObservation.cs
-	│   └── WateringRecommendation.cs
+	│   └── WaterRecommendation.cs
 	├── Repositories/
 	│   ├── IPlantRepository.cs
 	│   └── PlantRepository.cs
@@ -49,20 +49,27 @@ solution's current test setup does not already provide them.
 
 ## Implementation sequence
 
+1. For the first slice, use the JSON files in `Touching_Grass/Data/`; do not add EF Core,
+   LocalDB, or external weather clients.
+2. Implement `PlantRepository` and `ZipLookupService` with normalized, asynchronous,
+   no-tracking reads.
+3. Implement `WateringCalculatorService` with decimal arithmetic:
+   `gross = etInches * plantFactor`; `net = max(0, gross - rainfallInches)`.
+4. Update the Razor Page and Bootstrap view model for validation, loading, result,
+   unavailable, and retry states. Use minimal jQuery only for duplicate-submit prevention
+   and presentation behavior; server-side validation remains authoritative.
+5. Register services and JSON data loading in `Program.cs`.
+6. Add automated tests and run the build, migrations validation, and test suite.
+
+### Deferred target-architecture sequence
+
 1. Add EF Core SQL Server and tooling packages compatible with .NET 10.
 2. Add entities, `ApplicationDbContext`, constraints, migration, and repeatable seed/import
    for ZIP and plant data.
-3. Implement `PlantRepository` and `ZipLookupService` with normalized, asynchronous,
-   no-tracking reads.
+3. Replace JSON repository implementations with LocalDB-backed implementations.
 4. Implement typed HTTP clients for Open-Meteo and Visual Crossing with configured
    timeouts, cancellation, response validation, unit normalization, and safe logging.
-5. Implement `WateringCalculatorService` with decimal arithmetic:
-   `gross = etInches * plantFactor`; `net = max(0, gross - rainfallInches)`.
-6. Update the Razor Page and Bootstrap view model for validation, loading, result,
-   unavailable, and retry states. Use minimal jQuery only for duplicate-submit prevention
-   and presentation behavior; server-side validation remains authoritative.
-7. Register services, options, DbContext, and logging in `Program.cs`.
-8. Add automated tests and run the build, migrations validation, and test suite.
+5. Register provider options, `DbContext`, and structured logging in `Program.cs`.
 
 ## Local setup
 

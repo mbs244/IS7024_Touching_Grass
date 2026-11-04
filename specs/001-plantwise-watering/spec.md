@@ -5,6 +5,15 @@
 **Status**: Draft
 **Input**: Create a PlantWise feature specification for ZIP and plant-based watering recommendations using local datasets and weather APIs.
 
+## First Vertical Slice Scope
+
+This implementation slice delivers the complete local user journey with JSON sample
+data and deterministic mock weather values (`0.60` inches evapotranspiration and `0.10`
+inches rainfall). It MUST NOT call Open-Meteo or Visual Crossing and MUST NOT require
+EF Core or SQL Server LocalDB to run. The external-provider integrations, provider
+failure handling, and EF Core migration are deferred follow-up work; the requirements
+below remain the target behavior for the full feature.
+
 ## Clarifications
 
 ### Session 2026-11-03

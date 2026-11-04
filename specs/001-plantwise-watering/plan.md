@@ -8,12 +8,12 @@
 
 ## Summary
 
-Implement the PlantWise weekly watering recommendation flow in the existing .NET 10
-ASP.NET Core Razor Pages project. Local SQL Server LocalDB data resolves ZIP locations and
-plant factors; typed weather services normalize seven local calendar days of Open-Meteo
-evapotranspiration and Visual Crossing rainfall to inches; the calculator applies
-`max(0, (ET × plant factor) - rainfall)` and the Razor Page displays a transparent result
-or a safe recovery state.
+Implement the first PlantWise vertical slice in the existing .NET 10 ASP.NET Core Razor
+Pages project. The slice uses local JSON data and deterministic mock weather values; it
+does not call external APIs or require EF Core/LocalDB. The target architecture then
+replaces the local data boundary with SQL Server LocalDB and typed Open-Meteo and Visual
+Crossing services. In both stages, the calculator applies `max(0, (ET × plant factor) -
+rainfall)` and the Razor Page displays a transparent result or safe recovery state.
 
 ## Technical Context
 
@@ -28,7 +28,8 @@ or a safe recovery state.
 **Primary Dependencies**: ASP.NET Core Razor Pages, Entity Framework Core SQL Server
 provider, Bootstrap, jQuery, typed `HttpClient` via `IHttpClientFactory`
 
-**Storage**: SQL Server LocalDB through EF Core; local ZIP, plant, and factor reference data
+**Storage**: Current slice uses JSON sample data; target architecture uses SQL Server
+LocalDB through EF Core for ZIP, plant, and factor reference data
 
 **Testing**: xUnit with Microsoft.NET.Test.Sdk; unit, EF Core integration, Razor Page
 integration, and mocked HTTP contract tests
@@ -41,12 +42,14 @@ host; desktop browser UI
 **Performance Goals**: At least 95% of valid lookups complete within 10 seconds under
 normal network conditions; no unbounded duplicate submissions or outstanding requests
 
-**Constraints**: Fail closed on missing required data; validate before provider calls; use
-bounded HTTP timeouts, cancellation, safe credentials, explicit weekly-inch units, and
-decimal calculation arithmetic
+**Constraints**: Current slice makes no external HTTP calls and uses mock weather values;
+all stages fail closed on missing required data, validate before provider calls, use
+bounded HTTP timeouts and cancellation when providers are introduced, protect credentials,
+and use explicit weekly-inch units with decimal calculation arithmetic
 
-**Scale/Scope**: One primary lookup page, local reference datasets, two weather providers,
-and no accounts, saved history, notifications, or recommendation persistence
+**Scale/Scope**: Current slice is one primary lookup page with local reference datasets and
+mock weather; the target feature adds two weather providers. Accounts, saved history,
+notifications, and recommendation persistence remain out of scope.
 
 ## Constitution Check
 

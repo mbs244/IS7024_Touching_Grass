@@ -11,7 +11,7 @@
   rejected for this feature because the current application is small and the constitution
   requires maintainable simplicity.
 
-## Decision: Use EF Core with SQL Server LocalDB for local reference data
+## Target Decision: Use EF Core with SQL Server LocalDB for local reference data
 
 - **Decision**: Store ZIP locations, plants, and plant factors in EF Core entities and
   seed/import them into SQL Server LocalDB.
@@ -20,6 +20,15 @@
 - **Alternatives considered**: Reading CSV files on every request was rejected because it
   adds repeated parsing work and weakens query/test boundaries. A hosted production
   database is outside this feature's local-development scope.
+
+## Current Slice Decision: Use JSON sample data temporarily
+
+- **Decision**: The first vertical slice reads ZIP locations and plants from local JSON
+  files and does not initialize EF Core, LocalDB, or external weather clients.
+- **Rationale**: This produces a complete demonstrable user journey with deterministic
+  mock weather values while keeping the integration boundary ready for the target design.
+- **Migration**: The deferred EF Core task replaces the JSON repository implementation
+  after the slice is accepted; the user-facing contracts remain unchanged.
 
 ## Decision: Use typed service boundaries for weather providers
 
