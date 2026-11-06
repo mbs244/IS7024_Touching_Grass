@@ -33,10 +33,10 @@
 
 **Independent Test**: Register with a supported ZIP and verify persistence; repeat with an unknown/malformed ZIP and duplicate email and verify safe rejection with no partial state.
 
-- [ ] T015 [P] [US1] Create `Pages/Account/Register.cshtml.cs` using ASP.NET Core Identity account creation and ZIP validation. Requirements: FR-001, FR-001a, FR-003, FR-006, FR-024.
-- [ ] T016 [P] [US1] Create `Pages/Account/Register.cshtml` with email, password, confirmation, default ZIP, accessible labels, validation summary, and safe messages. Requirements: FR-001, FR-003, FR-024.
-- [ ] T017 [US1] Ensure registration uses Identity password hashing/verification, never echoes passwords, and returns a generic already-registered message for duplicate email. Requirements: FR-001b, FR-003, FR-004, FR-025.
-- [ ] T018 [US1] Add `IdentityAccountTests.cs` for successful registration, malformed/unknown ZIP, duplicate email, password non-echoing, and no-partial-save behavior. Requirements: FR-001, FR-001b, FR-003, FR-006, FR-025, SC-007.
+- [ ] T015 [P] [US1] Create `Pages/Account/Register.cshtml.cs` using the approved ASP.NET Core Identity account workflow and server-side email-address validation. Trim leading/trailing email whitespace before validation, use Identity normalized-email comparison, require email, Password, ConfirmPassword, and default ZIP, reject malformed email before account creation, and persist no partial account/profile data after any validation failure. Requirements: FR-001, FR-001a, FR-003, FR-006, FR-024.
+- [ ] T016 [P] [US1] Create `Pages/Account/Register.cshtml` with required email, password, ConfirmPassword, and default ZIP fields, accessible labels, validation summary, safe field-level messages, password-type inputs, and no password redisplay after failed submission. Requirements: FR-001, FR-003, FR-024.
+- [ ] T017 [US1] Ensure registration uses Identity password hashing/verification and normalized-email behavior, never echoes or logs Password/ConfirmPassword, never redisplays either value after failed submission, and returns a generic already-registered message for duplicate normalized email. Requirements: FR-001a, FR-001b, FR-003, FR-004, FR-025.
+- [ ] T018 [US1] Add `IdentityAccountTests.cs` for missing/malformed/trimmed/valid email, duplicate normalized email, missing Password or ConfirmPassword, password-confirmation mismatch, Identity policy failure, valid matching credentials, password non-echoing/non-redisplay, and no-partial-save behavior for account, ZIP, and profile data. Requirements: FR-001, FR-001a, FR-001b, FR-003, FR-006, FR-024, FR-025, SC-007.
 
 ## Phase 4: User Story 2 - Sign in and sign out privately (P1)
 
@@ -58,7 +58,7 @@
 - [ ] T023 [P] [US3] Create `Pages/Account/Profile.cshtml.cs` with owner-scoped default-ZIP read/update behavior. Requirements: FR-005, FR-007, FR-009, FR-022, FR-023.
 - [ ] T024 [P] [US3] Create `Pages/Account/Profile.cshtml` with accessible ZIP input, validation summary, and safe success/error feedback. Requirements: FR-006, FR-007, FR-024.
 - [ ] T025 [US3] Validate format and dataset existence before saving and preserve the prior valid ZIP after any failed update. Requirements: FR-006, FR-009, FR-024, SC-007.
-- [ ] T026 [US3] Add `DefaultZipTests.cs` for persistence, unknown/malformed ZIP rejection, previous-value preservation, and owner isolation. Requirements: FR-005, FR-006, FR-007, FR-009, FR-023, SC-003, SC-007.
+- [ ] T026 [US3] Add `DefaultZipTests.cs` for persistence, unknown/malformed ZIP rejection, previous-value preservation, unavailable persisted ZIP distinction, safe profile-update recovery messaging, later valid ZIP restoration of recommendation eligibility, and owner isolation. Requirements: FR-005, FR-006, FR-007, FR-008, FR-009, FR-020, FR-023, FR-027, FR-028, SC-003, SC-007.
 
 ## Phase 6: User Story 4 - Build a personal plant list (P1)
 
@@ -94,8 +94,8 @@
 - [ ] T038 [P] [US6] Create `Pages/MyPlants/Details.cshtml.cs` with owner-scoped saved-plant resolution and current default-ZIP lookup. Requirements: FR-008, FR-018, FR-022, FR-023.
 - [ ] T039 [P] [US6] Create `Pages/MyPlants/Details.cshtml` displaying current common/scientific name, ZIP used, calculated water need and units, existing explanation, and mock-weather context where the UI exposes source context; omit internal IDs. Requirements: FR-019, FR-026.
 - [ ] T040 [US6] Reuse `WateringCalculatorService` with the existing deterministic mock-weather inputs and do not add external weather calls. Requirements: FR-018, FR-019, FR-026, SC-008.
-- [ ] T041 [US6] Add safe unavailable plant, ZIP-location, and mock-weather error states with usable navigation and no stack trace/database detail. Requirements: FR-020, FR-025, SC-007.
-- [ ] T042 [US6] Add `SavedPlantRecommendationTests.cs` for content, current default ZIP, recalculation after ZIP update, cross-user access denial, unavailable data, and recommendation parity with the existing anonymous search flow for identical plant/ZIP/factor/mock-weather inputs. Requirements: FR-008, FR-018, FR-019, FR-020, FR-023, FR-026, SC-006, SC-007, SC-008.
+- [ ] T041 [US6] Add safe unavailable plant, malformed/unknown ZIP, unavailable persisted ZIP, and mock-weather error states with usable profile recovery navigation and no stack trace, database detail, personal data, or internal exception information. For an unavailable persisted ZIP, block calculation, do not invoke `WateringCalculatorService` with invented/replacement coordinates, preserve the stored ZIP, personal plant, favorite state, and timestamps, and require a later valid profile ZIP update before recommendation eligibility is restored. Requirements: FR-008, FR-020, FR-025, FR-027, FR-028, SC-007.
+- [ ] T042 [US6] Add `SavedPlantRecommendationTests.cs` for content, current default ZIP, recalculation after ZIP update, unavailable persisted ZIP calculation blocking and unchanged ZIP/plant/favorite/timestamp state, profile-update recovery, later valid ZIP restoration, cross-user access denial, unavailable data, and recommendation parity with the existing anonymous search flow for identical plant/ZIP/factor/mock-weather inputs. Requirements: FR-008, FR-018, FR-019, FR-020, FR-023, FR-026, FR-027, FR-028, SC-006, SC-007, SC-008.
 
 ## Phase 9: User Story 7 - Preserve the existing visitor journey (P1)
 

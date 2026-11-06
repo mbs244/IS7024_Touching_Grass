@@ -6,9 +6,9 @@ This contract describes user-visible Razor Pages behavior for the feature. Accou
 
 ### Register
 
-- **Input**: Email address, password, password confirmation if required by the existing account flow, and default five-digit ZIP code.
+- **Input**: Required email address, password, exact-match `ConfirmPassword`, and default five-digit ZIP code. Leading and trailing email whitespace is removed before server-side ASP.NET Core Identity email validation and configured normalized-email comparison.
 - **Success**: Account is created with the validated default ZIP and the user receives a clear sign-in path.
-- **Validation failure**: Field-level messages identify invalid email, password, or ZIP input; no partial account or ZIP update is retained.
+- **Validation failure**: Field-level messages identify missing or malformed email, password-policy failure, missing or mismatched `ConfirmPassword`, or invalid ZIP input; no password value is echoed or redisplayed, and no partial account, default ZIP, or profile data is retained. Password and ConfirmPassword are not logged or retained in form fields after failed submission.
 - **Duplicate email**: Generic already-registered message; do not reveal account details.
 
 ### Sign in
@@ -47,7 +47,7 @@ This contract describes user-visible Razor Pages behavior for the feature. Accou
 - **Input**: A personal plant record belonging to the authenticated user.
 - **Processing**: Resolve the referenced source plant, resolve the user's current default ZIP, use the existing deterministic mock-weather inputs, and call the existing `WateringCalculatorService`.
 - **Success**: Display selected plant, ZIP used, calculated water need, and the existing explanation.
-- **Unavailable data**: Display a safe actionable message and keep navigation to personal pages available.
+- **Unavailable data**: If the persisted default ZIP no longer resolves, do not calculate the recommendation, invoke `WateringCalculatorService` with invented or replacement coordinates, or select a fallback ZIP. Preserve the persisted default ZIP, personal plant record, favorite status, `CreatedAt`, and `LastSearchedAt`; display a safe actionable message explaining that the saved ZIP is unavailable and direct the user to update it from the profile page. Keep navigation to personal pages available and do not expose personal information, database details, or internal exception information. This state is distinct from malformed user-entered ZIP input, an unknown registration ZIP, missing plant data, and unavailable or invalid mock-weather inputs.
 - **Result content**: Display current common name, scientific name when available, ZIP used, calculated water need and units, and the existing explanation. Do not display internal database identifiers.
 
 ## Personal-plant upsert contract

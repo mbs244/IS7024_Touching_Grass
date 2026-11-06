@@ -53,7 +53,7 @@
 - [ ] CHK026 Are external social sign-in, public profiles, sharing, administrators, reminders, multiple ZIPs, manual plants, and formula changes explicitly excluded from the account feature? [Scope, Spec Out of Scope]
 - [ ] CHK027 Is preservation of the existing anonymous plant-search and watering journey stated as a regression boundary rather than an implicit assumption? [Scope, Spec FR-021, User Story 7]
 - [ ] CHK028 Can each security and privacy requirement be traced to at least one user story, acceptance scenario, edge case, or measurable success criterion? [Traceability, Spec FR-001–FR-025]
-- [ ] CHK029 Are the remaining implementation choices intentionally left technology-agnostic while the required security outcomes remain concrete? [Scope, Spec Feature Purpose and Assumptions]
+- [ ] CHK029 Are implementation choices intentionally constrained by the approved ASP.NET Core Razor Pages, ASP.NET Core Identity, Entity Framework Core, SQL Server LocalDB, and `net10.0` architecture while the required security and privacy outcomes remain explicit, independently testable, and traceable? [Scope, Plan Technical Context and Constitution Check]
 
 ## Notes
 

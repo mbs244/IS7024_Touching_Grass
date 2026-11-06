@@ -52,6 +52,7 @@ Represents the existing calculated result for a request.
 - **Outputs**: Plant identity, ZIP used, calculated water need, units, and existing explanation.
 - **Persistence**: Generated on request; not a permanent personal-plant snapshot.
 - **Failure states**: Missing plant, ZIP-location, or existing deterministic mock-weather inputs that are unavailable or invalid produce a safe unavailable-data result rather than an invented recommendation.
+- **Unavailable persisted default ZIP**: If the authenticated user's stored default ZIP was previously valid but no longer resolves, no recommendation is calculated, no fallback ZIP or invented coordinates are used, and `WateringCalculatorService` is not invoked with replacement location data. The stored ZIP, personal plant record, favorite status, `CreatedAt`, and `LastSearchedAt` remain unchanged. The user receives a safe profile-update recovery path. This is distinct from malformed input, an unknown registration ZIP, missing plant data, and unavailable or invalid mock-weather inputs.
 
 ## Relationships and invariants
 

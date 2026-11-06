@@ -20,27 +20,30 @@ This guide defines user-level and artifact-level verification after implementati
 
 ## Verification flow
 
-1. Register User A with a supported ZIP and an email/password.
-2. Confirm the account and default ZIP persist in the relational database; confirm no account data is written to JSON.
-3. Sign in with User A and access protected profile and personal-plant pages.
-4. Attempt invalid credentials and confirm a generic response that does not reveal account existence or echo the password.
-5. Complete a successful existing plant search as User A. Confirm the recommendation succeeds before one personal-plant record is created.
-6. Repeat the same search. Confirm no duplicate is created, `CreatedAt` is unchanged, `LastSearchedAt` advances in UTC, and the favorite state is preserved.
-7. Force or simulate calculation failure. Confirm no personal-plant record is created or modified and both timestamps remain unchanged for an existing record.
-8. Confirm that viewing the personal plant list or details, toggling favorite status, displaying an unavailable source plant, or failing validation does not modify either timestamp.
-9. Save a second plant, use the `OnPostToggleFavoriteAsync` personal-list handler, and confirm the server-rendered control has visible/accessibility text and favorites-first ordering.
-10. Sign out, sign back in, and confirm personal plants and favorite state persist.
-11. Open the saved plant and confirm current common name, scientific name when available, current default ZIP, calculated need and units, existing explanation, and deterministic mock-weather context where exposed.
-12. Compare the saved-plant result with the anonymous search result using the same plant, ZIP, water factor, and existing deterministic mock-weather inputs; confirm parity.
-13. Verify passwords shorter than eight characters or missing a digit, lowercase letter, or uppercase letter are rejected; verify a valid password does not require a non-alphanumeric character. Confirm validation responses never echo passwords and unsuccessful sign-in uses a generic message.
-14. Update the default ZIP to another supported ZIP, reopen the saved plant, and confirm recalculation uses the new ZIP.
-15. Attempt malformed and unknown ZIP updates; confirm clear feedback and preservation of the prior valid ZIP.
-16. Make a source plant unavailable and confirm its saved record remains visible using snapshots, is marked unavailable, preserves favorite state, and cannot open a recommendation.
-17. Register User B and verify User B cannot view or modify User A's account, personal plants, favorites, or saved recommendation by changing request identifiers.
-18. Sign out and attempt direct access to protected pages/actions; confirm safe redirection or denial.
-19. Exercise the original anonymous plant-and-ZIP flow and confirm its prior behavior remains functional.
+1. Register User A with a supported ZIP, a valid email address, a Password, and a matching ConfirmPassword.
+2. Submit missing, malformed, whitespace-padded, and duplicate normalized email addresses; confirm trimming/Identity normalization, safe field-level feedback, generic duplicate handling, and no account, default ZIP, or partial profile persistence.
+3. Confirm the account and default ZIP persist in the relational database; confirm no account data is written to JSON.
+4. Sign in with User A and access protected profile and personal-plant pages.
+5. Attempt invalid credentials and confirm a generic response that does not reveal account existence or echo the password.
+6. Submit missing Password, missing ConfirmPassword, mismatched credentials, and each Identity password-policy failure; confirm safe field-level feedback, no password redisplay, and no partial account or ZIP persistence. Confirm a valid matching password without a non-alphanumeric character succeeds.
+7. Complete a successful existing plant search as User A. Confirm the recommendation succeeds before one personal-plant record is created.
+8. Repeat the same search. Confirm no duplicate is created, `CreatedAt` is unchanged, `LastSearchedAt` advances in UTC, and the favorite state is preserved.
+9. Force or simulate calculation failure. Confirm no personal-plant record is created or modified and both timestamps remain unchanged for an existing record.
+10. Confirm that viewing the personal plant list or details, toggling favorite status, displaying an unavailable source plant, or failing validation does not modify either timestamp.
+11. Save a second plant, use the `OnPostToggleFavoriteAsync` personal-list handler, and confirm the server-rendered control has visible/accessibility text and favorites-first ordering.
+12. Sign out, sign back in, and confirm personal plants and favorite state persist.
+13. Open the saved plant and confirm current common name, scientific name when available, current default ZIP, calculated need and units, existing explanation, and deterministic mock-weather context where exposed.
+14. Compare the saved-plant result with the anonymous search result using the same plant, ZIP, water factor, and existing deterministic mock-weather inputs; confirm parity.
+15. Update the default ZIP to another supported ZIP, reopen the saved plant, and confirm recalculation uses the new ZIP.
+16. Simulate the persisted default ZIP disappearing from the dataset; confirm calculation is blocked, no fallback ZIP or invented coordinates are used, the calculator is not invoked with replacement data, the stored ZIP/personal plant/favorite/timestamps remain unchanged, and the user receives a profile-update recovery path.
+17. Update the profile to a valid five-digit ZIP in the current dataset and confirm recommendation eligibility is restored.
+18. Attempt malformed and unknown ZIP updates; confirm clear feedback and preservation of the prior valid ZIP.
+19. Make a source plant unavailable and confirm its saved record remains visible using snapshots, is marked unavailable, preserves favorite state, and cannot open a recommendation.
+20. Register User B and verify User B cannot view or modify User A's account, personal plants, favorites, or saved recommendation by changing request identifiers.
+21. Sign out and attempt direct access to protected pages/actions; confirm safe redirection or denial.
+22. Exercise the original anonymous plant-and-ZIP flow and confirm its prior behavior remains functional.
 
-20. Verify the empty application database can be created from the application migration, the isolated test database can be created from that same migration, Identity and personal-plant relationships and the user-plus-SourcePlantId uniqueness constraint are enforced, and repeated test executions do not depend on data from an earlier run.
+23. Verify the empty application database can be created from the application migration, the isolated test database can be created from that same migration, Identity and personal-plant relationships and the user-plus-SourcePlantId uniqueness constraint are enforced, and repeated test executions do not depend on data from an earlier run.
 
 ## Security and logging verification
 
