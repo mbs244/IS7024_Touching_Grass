@@ -16,6 +16,7 @@ This contract describes user-visible Razor Pages behavior for the feature. Accou
 - **Input**: Email address and password.
 - **Success**: Authenticated session and access to the signed-in user's personal pages.
 - **Failure**: Generic authentication failure; do not reveal whether the email exists, whether the password was wrong, or other account state.
+- **Password policy**: Configure ASP.NET Core Identity explicitly with `RequiredLength = 8`, `RequiredUniqueChars = 1`, `RequireDigit = true`, `RequireLowercase = true`, `RequireUppercase = true`, and `RequireNonAlphanumeric = false`. Delegate hashing, verification, policy enforcement, account lockout behavior when enabled, and safe failures to Identity; do not implement custom validation, hashing, or readable password storage.
 
 ### Sign out
 
@@ -52,7 +53,9 @@ This contract describes user-visible Razor Pages behavior for the feature. Accou
 ## Personal-plant upsert contract
 
 - **Timing**: After ZIP resolution, plant resolution, and successful recommendation calculation, and before the successful recommendation response or redirect.
-- **Repeat search**: Update the existing `(authenticated user, SourcePlantId)` record, preserve favorite state, and update the approved search timestamp if present.
+- **First successful search**: After a successful recommendation, create the `(authenticated user, SourcePlantId)` record with `CreatedAt` and `LastSearchedAt` set to the current UTC timestamp. `CreatedAt` is set once, is not client-supplied, and is not changed by later operations.
+- **Repeat successful search**: Update the existing record's `LastSearchedAt` with the current UTC timestamp, preserve `CreatedAt` and favorite state, and create no duplicate.
+- **Timestamp exclusions**: Do not update either timestamp after list viewing, plant-details viewing, favorite toggling, unavailable-source rendering, failed validation, ZIP or plant lookup, unavailable or invalid mock-weather inputs, or failed recommendation calculation. Favorite changes preserve both timestamps.
 - **Failure**: Invalid input, lookup failure, or calculation failure creates or changes no personal-plant record.
 - **Atomicity**: The relational upsert commits atomically; JSON lookups and deterministic mock-weather calculation remain read-only operations outside a distributed transaction.
 

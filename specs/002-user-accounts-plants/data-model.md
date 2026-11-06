@@ -38,20 +38,20 @@ Represents a user's saved association to an existing Plant.
 - **Owner**: Exactly one User Account.
 - **Plant reference**: `SourcePlantId`, `CommonNameSnapshot`, and `ScientificNameSnapshot` captured when first saved. The snapshots are display fallbacks only and never authoritative calculation inputs.
 - **IsFavorite**: Boolean favorite status owned by the user.
-- **CreatedAt**: Creation timestamp.
-- **LastSearchedAt**: Last successful-search timestamp when retained by the approved model.
+- **CreatedAt**: Required UTC timestamp. Set once when the authenticated user's first successful watering recommendation causes the personal plant record to be created. It must remain unchanged during repeated successful searches, favorite-status toggles, personal-plant-list views, plant-details views, failed recommendation attempts, and unavailable-source rendering. It must not be supplied or modified by the client.
+- **LastSearchedAt**: Required UTC activity timestamp stored in UTC. Set during the first successful recommendation and updated during later successful recommendations for the same user and SourcePlantId. It is not updated by personal-plant-list views, plant-details views, favorite changes, unavailable-source display, validation failures, lookup failures, mock-weather-input failures, or calculation failures.
 - **Ordering**: Favorites sort before non-favorites; ties use a stable deterministic order.
-- **Lifecycle**: Created or upserted only after ZIP resolution, plant resolution, and successful `WateringCalculatorService` calculation. Repeated searches update the existing entry and timestamp while preserving favorite state. It remains visible if the source Plant becomes unavailable.
+- **Lifecycle**: Created or upserted only after ZIP resolution, plant resolution, and successful `WateringCalculatorService` calculation using the existing deterministic mock-weather inputs. Repeated searches update the existing entry while preserving `CreatedAt` and favorite state. It remains visible if the source Plant becomes unavailable.
 - **Unavailable source state**: If `SourcePlantId` no longer resolves, render the snapshots, mark the entry unavailable, preserve favorite state, disable current recommendations, and never calculate with the snapshot or stale water factor.
 
 ## Watering Recommendation
 
 Represents the existing calculated result for a request.
 
-- **Inputs**: Selected current Plant, user's current DefaultZipCode resolved through ZIP Location, existing deterministic mock-weather values, and the established `WateringCalculatorService` calculation.
+- **Inputs**: Selected current Plant, user's current DefaultZipCode resolved through ZIP Location, existing deterministic mock-weather inputs, and the established `WateringCalculatorService` calculation.
 - **Outputs**: Plant identity, ZIP used, calculated water need, units, and existing explanation.
 - **Persistence**: Generated on request; not a permanent personal-plant snapshot.
-- **Failure states**: Missing plant, ZIP-location, or mock-weather data produces a safe unavailable-data result rather than an invented recommendation.
+- **Failure states**: Missing plant, ZIP-location, or existing deterministic mock-weather inputs that are unavailable or invalid produce a safe unavailable-data result rather than an invented recommendation.
 
 ## Relationships and invariants
 

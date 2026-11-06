@@ -97,9 +97,9 @@ As a signed-in user, I want to select a saved plant and see its current watering
 
 **Acceptance Scenarios**:
 
-1. **Given** a signed-in user selects one of the user's saved plants and has a valid default ZIP, **When** the user opens the plant, **Then** PlantWise uses the selected plant, the current default ZIP, existing ZIP-location data, current weather integrations, and the established watering calculation to display a recommendation.
+1. **Given** a signed-in user selects one of the user's saved plants and has a valid default ZIP, **When** the user opens the plant, **Then** PlantWise uses the selected plant, the authenticated user's current default ZIP code, the existing ZIP-location reference dataset, the existing deterministic mock-weather inputs, the existing `WateringCalculatorService`, and the existing PlantWise watering calculation and recommendation explanation to display a recommendation.
 2. **Given** the user changes the default ZIP, **When** the user later opens the same saved plant, **Then** PlantWise recalculates the recommendation using the new ZIP rather than a stale location.
-3. **Given** required plant, ZIP-location, or weather data is unavailable, **When** the user opens the saved plant, **Then** a clear unavailable-data message is shown, no misleading recommendation is displayed, and the user can continue using the application.
+3. **Given** the required plant or ZIP-location data is unavailable, or the existing deterministic mock-weather inputs are unavailable or invalid, **When** the user opens the saved plant, **Then** a safe understandable error is shown, no recommendation is displayed, no personal plant record is created or changed, existing favorite status and account/default-ZIP data remain unchanged, no external weather provider is contacted, and the user can continue using the application.
 
 ### User Story 7 - Preserve the existing visitor journey (Priority: P1)
 
@@ -120,7 +120,7 @@ As a user, I want existing plant search and watering behavior to remain function
 - **FR-001a**: Registration and sign-in MUST use an email address and password.
 - **FR-001b**: Registration MUST reject an email address already associated with an account using a generic already-registered message that does not expose account details.
 - **FR-002**: The system MUST allow a registered user to sign in and sign out.
-- **FR-003**: The system MUST delegate password storage and verification to ASP.NET Core Identity and MUST protect passwords from display, readable storage, and logging; the application MUST NOT implement custom readable-password storage or custom password hashing.
+- **FR-003**: The system MUST delegate password hashing, verification, password-policy enforcement, account lockout behavior when enabled, and safe authentication failures to ASP.NET Core Identity. The configured password policy MUST explicitly require `RequiredLength = 8`, `RequiredUniqueChars = 1`, `RequireDigit = true`, `RequireLowercase = true`, `RequireUppercase = true`, and `RequireNonAlphanumeric = false`. The application MUST protect passwords from display, readable storage, and logging and MUST NOT implement custom password validation, readable-password storage, or custom password hashing.
 - **FR-004**: The system MUST use a generic authentication failure message that does not reveal whether a particular account exists.
 - **FR-005**: The system MUST persist one default ZIP code for each user.
 - **FR-006**: The system MUST verify that a default ZIP code is exactly five digits and exists in the application's ZIP-location dataset before saving it.
@@ -137,15 +137,15 @@ As a user, I want existing plant search and watering behavior to remain function
 - **FR-017**: The system MUST provide an accessible visible indication of favorite status that is not conveyed only through color or icon shape; each server-rendered control MUST have visible text or an accessible label stating Favorite or Not favorite, an action name such as Add [plant name] to favorites or Remove [plant name] from favorites, correct button semantics, and keyboard operability without JavaScript.
 - **FR-018**: The system MUST allow a signed-in user to open a saved plant and view a current recommendation using the user's current default ZIP and the established PlantWise calculation.
 - **FR-019**: Recommendation results MUST identify the current plant common name, current scientific name when available, ZIP code used, calculated water need and units, and the existing PlantWise explanation; the result MUST not expose internal database identifiers and MUST identify the existing deterministic mock-weather inputs when the current UI exposes data-source context.
-- **FR-020**: The system MUST show a clear safe error when required plant, ZIP-location, or weather data is unavailable and MUST keep the application usable.
+- **FR-020**: The system MUST show a clear safe error when required plant or ZIP-location data is unavailable, or the existing deterministic mock-weather inputs are unavailable or invalid, and MUST keep the application usable without creating or changing a personal plant record.
 - **FR-021**: The system MUST preserve the existing visitor plant-search and watering behavior according to current access rules.
 - **FR-022**: The system MUST require authentication for personal account, personal plant, favorite, and default-ZIP actions.
 - **FR-023**: The system MUST authorize every personal read and write against the signed-in user's identity; a user MUST NOT view or modify another user's account, saved plant, or favorite data.
 - **FR-024**: The system MUST validate user-provided account, ZIP, plant-selection, and action values at the point of use.
-- **FR-025**: Passwords, password hashes, security stamps, authentication cookies, connection strings, secrets, antiforgery tokens, full account records, and unrelated personal data MUST NOT be written to logs or error responses. Expected authentication failures MUST NOT log submitted credentials. User IDs MAY be used internally for authorization and correlation, but logs MUST omit unnecessary profile information. User-facing exceptions MUST be safe, with detailed exception data limited to appropriate development diagnostics; production-style behavior MUST not expose stack traces or database details.
+- **FR-025**: Passwords, password hashes, security stamps, authentication cookies, connection strings, secrets, antiforgery tokens, full account records, and unrelated personal data MUST NOT be written to logs or error responses. Expected authentication failures MUST NOT log submitted credentials. User IDs MAY be used internally for authorization and correlation, but logs MUST omit unnecessary profile information. User-facing exceptions MUST be safe, with detailed exception data limited to appropriate development diagnostics; production-style behavior MUST not expose stack traces or database details. Registration validation MUST use the configured ASP.NET Core Identity password policy and safe messages without echoing passwords.
 - **FR-026**: The system MUST use the existing deterministic mock-weather inputs and `WateringCalculatorService` for saved-plant recommendations; this feature MUST NOT add or call Open-Meteo, Visual Crossing, or another external weather provider.
 - **FR-027**: A signed-in user's personal plant MUST be upserted only after ZIP resolution, plant resolution, and a valid recommendation from `WateringCalculatorService` succeed; failed validation, lookup, or calculation MUST not create or alter the record.
-- **FR-028**: A personal plant MUST retain SourcePlantId, common-name snapshot, scientific-name snapshot, owner identifier, favorite state, created timestamp, and last-accessed or last-searched timestamp when used by the approved model, without copying the plant water factor as authoritative data.
+- **FR-028**: A personal plant MUST retain SourcePlantId, CommonNameSnapshot, ScientificNameSnapshot, authenticated user ownership identifier, IsFavorite, CreatedAt, and LastSearchedAt as a UTC timestamp, without copying the plant water factor as authoritative data. CreatedAt is set only on first successful addition and never changes during repeat searches or favorite toggles. LastSearchedAt is set after the first successful recommendation and updated after each later successful recommendation for the same user and SourcePlantId; it is not updated by failed operations, list viewing, favorite toggles, or unavailable-source rendering.
 
 ## Validation Rules
 
@@ -182,8 +182,8 @@ As a user, I want existing plant search and watering behavior to remain function
 
 - Existing plant search and matching rules remain authoritative.
 - Existing nationwide ZIP-location data remains authoritative for default-ZIP validation and location resolution.
-- Existing weather-data integrations remain authoritative for current weather inputs.
-- Existing watering calculation, units, rounding/display behavior, and explanation remain unchanged.
+- Existing deterministic mock-weather inputs remain authoritative for current inputs in this feature.
+- Existing `WateringCalculatorService`, units, rounding/display behavior, and explanation remain unchanged.
 - Existing safe unavailable-data and validation behavior remains the baseline for new account and personal-plant flows.
 
 ## Edge Cases
@@ -192,13 +192,13 @@ As a user, I want existing plant search and watering behavior to remain function
 - Registration or ZIP update contains whitespace, letters, punctuation, fewer than five digits, or more than five digits.
 - The user's current default ZIP later disappears from the ZIP-location dataset.
 - A saved plant is removed, renamed, or otherwise unavailable in the source plant dataset; the personal record remains visible with its retained name snapshots, is marked unavailable, preserves favorite state, and cannot be opened for a current recommendation.
-- A weather provider is unavailable, times out, rate-limits, or returns unusable data while opening a saved plant.
+- Existing deterministic mock-weather inputs are unavailable or invalid while opening a saved plant; no external weather provider is contacted.
 - A user submits the same successful search repeatedly or submits favorite/unfavorite actions repeatedly.
 - Two users save the same plant and one changes favorite status.
 - A signed-out visitor attempts direct access to a personal URL or action.
 - A user changes an identifier in a personal-plant request to target another user's record.
 - Registration uses an email address already associated with an account; the system rejects it with a generic already-registered message without exposing account details.
-- Registration and sign-in use an email address and password. Passwords must satisfy the application's secure minimum policy and are never displayed, logged, or stored as readable text.
+- Registration and sign-in use an email address and password. ASP.NET Core Identity enforces the approved password policy: `RequiredLength = 8`, `RequiredUniqueChars = 1`, `RequireDigit = true`, `RequireLowercase = true`, `RequireUppercase = true`, and `RequireNonAlphanumeric = false`. The application does not implement custom password hashing or verification; passwords are never stored as readable text, written to logs, or returned in validation responses. Registration displays safe policy-failure messages, and authentication failures use a generic message that does not reveal whether an account exists.
 
 ## Scope Boundaries
 
@@ -223,7 +223,7 @@ As a user, I want existing plant search and watering behavior to remain function
 - Multiple saved ZIP codes per user.
 - Manually adding plants absent from the PlantWise dataset.
 - Changing the established watering formula.
-- Replacing the current plant, ZIP-location, or weather-data sources.
+- Replacing or changing the existing deterministic mock-weather inputs, or introducing external weather providers or live weather API integrations, is outside the scope of feature 002. Feature 002 does not add live evapotranspiration or rainfall retrieval, does not create a second watering calculation, and continues to reuse the existing PlantWise watering recommendation behavior.
 - Redesigning unrelated pages.
 
 ## Assumptions
@@ -233,8 +233,8 @@ As a user, I want existing plant search and watering behavior to remain function
 - A plant is added to the personal list only after a successful existing plant search and recommendation flow.
 - Personal list order is favorites first; within each favorite group, a stable deterministic order is sufficient unless clarified later.
 - Current recommendations are recalculated when opened and are not assumed to be permanently accurate after weather changes.
-- Standard secure web authentication behavior is expected using email address and password; the exact secure minimum password rules may be established during planning if they do not weaken the stated security requirements.
-- The existing source datasets and weather integrations remain available to the feature.
+- Standard ASP.NET Core Identity authentication is used with the approved password policy: `RequiredLength = 8`, `RequiredUniqueChars = 1`, `RequireDigit = true`, `RequireLowercase = true`, `RequireUppercase = true`, and `RequireNonAlphanumeric = false`. This policy is approved for feature 002 and is not deferred to implementation planning. Password hashing, verification, policy enforcement, and safe authentication failures remain delegated to Identity; passwords are never stored as readable text, logged, or returned in validation responses.
+- The existing source datasets and deterministic mock-weather inputs remain available to the feature.
 
 ## Success Criteria
 
@@ -244,7 +244,7 @@ As a user, I want existing plant search and watering behavior to remain function
 - **SC-004**: In acceptance testing, 100% of successful plant searches by signed-in users produce exactly one personal-list entry per user and source plant, including repeated searches.
 - **SC-005**: In acceptance testing, favorite status remains correct after sign-out and later sign-in, and all favorite plants appear before non-favorites.
 - **SC-006**: In acceptance testing, 100% of saved-plant recommendation results identify the selected plant, ZIP used, calculated need, and existing explanation when required data is available.
-- **SC-007**: In acceptance testing, invalid or unavailable account, ZIP, plant, and weather data produces an actionable safe message without corrupting existing valid personal data.
+- **SC-007**: In acceptance testing, invalid or unavailable account, ZIP, plant, or existing deterministic mock-weather inputs produce an actionable safe message without corrupting existing valid personal data.
 - **SC-008**: Existing plant-search and watering regression tests continue to pass with no change to the established calculation formula or displayed units.
 
 ### Performance Measurement Conditions

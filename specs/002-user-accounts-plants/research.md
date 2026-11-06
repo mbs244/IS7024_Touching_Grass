@@ -41,8 +41,8 @@
 
 ## Remaining implementation-level decisions
 
-- Exact password strength values, lockout values, cookie lifetime, and deployment-specific connection settings should follow the platform security baseline and project environment configuration during implementation.
-- This feature uses the current deterministic mock-weather inputs only. Open-Meteo, Visual Crossing, and other external weather providers remain separate future work.
+- Lockout values, cookie lifetime, and deployment-specific connection settings should follow the platform security baseline and project environment configuration during implementation. The password policy is already approved and is not deferred: ASP.NET Core Identity MUST use `RequiredLength = 8`, `RequiredUniqueChars = 1`, `RequireDigit = true`, `RequireLowercase = true`, `RequireUppercase = true`, and `RequireNonAlphanumeric = false`.
+- This feature uses the existing deterministic mock-weather inputs only. Open-Meteo, Visual Crossing, and other external weather providers remain separate future work.
 
 ## Security and measurement decisions
 

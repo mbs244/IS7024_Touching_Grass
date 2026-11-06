@@ -38,7 +38,7 @@
 - [ ] CHK017 Are email, password, password confirmation if applicable, ZIP, plant selection, and personal-action inputs each assigned explicit validation rules? [Completeness, Spec Validation Rules]
 - [ ] CHK018 Is it clear that a ZIP must both match the five-digit format and exist in the current ZIP-location dataset? [Clarity, Spec FR-006]
 - [ ] CHK019 Does every invalid registration or profile update scenario state that no partial or unintended state change is retained? [Failure Handling, Spec FR-009]
-- [ ] CHK020 Are missing plant data, missing ZIP-location data, and unavailable weather data distinguished from invalid user input where that distinction affects user action? [Clarity, Spec FR-020]
+- [ ] CHK020 Are missing plant data, missing ZIP-location data, and unavailable or invalid existing deterministic mock-weather inputs distinguished from invalid user input where that distinction affects user action? [Clarity, Spec FR-020]
 - [ ] CHK021 Are safe messages and recovery paths defined for authentication failures, unavailable recommendation data, and invalid personal actions without exposing secrets or personal data? [Completeness, Spec FR-004, FR-020, FR-025]
 
 ## Privacy, Logging, and Information Disclosure
