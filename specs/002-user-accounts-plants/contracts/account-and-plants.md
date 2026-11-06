@@ -1,0 +1,73 @@
+# Account and Personal Plants Contract
+
+This contract describes user-visible Razor Pages behavior for the feature. Account persistence uses ASP.NET Core Identity with the Identity Entity Framework store; mutable personal data uses Entity Framework Core and SQL Server LocalDB for local development. Existing Plant and ZIP JSON files remain read-only reference datasets.
+
+## Anonymous account actions
+
+### Register
+
+- **Input**: Email address, password, password confirmation if required by the existing account flow, and default five-digit ZIP code.
+- **Success**: Account is created with the validated default ZIP and the user receives a clear sign-in path.
+- **Validation failure**: Field-level messages identify invalid email, password, or ZIP input; no partial account or ZIP update is retained.
+- **Duplicate email**: Generic already-registered message; do not reveal account details.
+
+### Sign in
+
+- **Input**: Email address and password.
+- **Success**: Authenticated session and access to the signed-in user's personal pages.
+- **Failure**: Generic authentication failure; do not reveal whether the email exists, whether the password was wrong, or other account state.
+
+### Sign out
+
+- **Success**: Authenticated session ends; protected personal pages and actions require sign-in again.
+
+## Authenticated account actions
+
+### View/update profile
+
+- **Read**: Return only the signed-in user's account settings and current default ZIP.
+- **Update**: Accept only a five-digit ZIP present in the ZIP-location dataset; preserve the prior valid ZIP when validation fails.
+
+### List personal plants
+
+- **Read**: Return only the signed-in user's personal entries, sorted favorites first with stable ordering within each group.
+- **Empty state**: Return a clear message when no entries exist.
+- **Unavailable source plant**: Return an entry-level unavailable state without failing the whole list.
+
+### Favorite/unfavorite
+
+- **Input**: Personal plant record selected by the user.
+- **Authorization**: The selected record must belong to the authenticated user.
+- **Success**: Update only that user's favorite status and return the updated visible status/order.
+- **Failure**: Safe failure without revealing whether another user's record exists.
+
+### Open saved plant recommendation
+
+- **Input**: A personal plant record belonging to the authenticated user.
+- **Processing**: Resolve the referenced source plant, resolve the user's current default ZIP, use the existing deterministic mock-weather inputs, and call the existing `WateringCalculatorService`.
+- **Success**: Display selected plant, ZIP used, calculated water need, and the existing explanation.
+- **Unavailable data**: Display a safe actionable message and keep navigation to personal pages available.
+- **Result content**: Display current common name, scientific name when available, ZIP used, calculated water need and units, and the existing explanation. Do not display internal database identifiers.
+
+## Personal-plant upsert contract
+
+- **Timing**: After ZIP resolution, plant resolution, and successful recommendation calculation, and before the successful recommendation response or redirect.
+- **Repeat search**: Update the existing `(authenticated user, SourcePlantId)` record, preserve favorite state, and update the approved search timestamp if present.
+- **Failure**: Invalid input, lookup failure, or calculation failure creates or changes no personal-plant record.
+- **Atomicity**: The relational upsert commits atomically; JSON lookups and deterministic mock-weather calculation remain read-only operations outside a distributed transaction.
+
+## Favorite action contract
+
+- **Location**: Dedicated POST handler on the protected personal-plants PageModel at `Pages/MyPlants/Index.cshtml.cs`.
+- **Handler**: Use one `OnPostToggleFavoriteAsync` handler.
+- **Protection**: Require authentication and antiforgery protection; query the selected personal record within the signed-in user's ownership scope.
+- **Success**: Persist the toggled state and return to the personal-plant list with favorites first.
+- **Control**: Use a server-rendered, keyboard-operable button with visible or accessible text such as `Add [plant name] to favorites` or `Remove [plant name] from favorites`; do not rely only on color or icon shape.
+
+## Authorization invariants
+
+- No personal operation accepts caller-supplied ownership as authoritative.
+- Signed-out requests cannot read or mutate account, personal plant, or favorite data.
+- Cross-user requests return the same safe denial/not-found style regardless of whether a target record exists.
+- Errors do not include passwords, credentials, secrets, or unrelated users' data.
+- Logs and responses must exclude passwords, password hashes, security stamps, authentication cookies, connection strings, secrets, antiforgery tokens, full account records, stack traces, and database details. Expected authentication failures must not log submitted credentials.
