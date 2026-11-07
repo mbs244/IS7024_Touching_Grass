@@ -10,50 +10,50 @@
 
 ## Authentication and Credential Requirements
 
-- [ ] CHK001 Are the required registration and sign-in identifiers explicitly defined as email address and password, including the required email format and password rules? [Completeness, Spec FR-001a]
-- [ ] CHK002 Is the behavior for duplicate email registration unambiguous and consistent with the requirement to avoid account-existence disclosure? [Clarity, Spec FR-001b]
-- [ ] CHK003 Are successful registration, sign-in, sign-out, invalid credentials, and signed-out access flows all defined with observable outcomes? [Coverage, Spec User Stories 1–2]
-- [ ] CHK004 Are password handling requirements explicit enough to prohibit readable storage, display, logging, and accidental exposure in errors or support output? [Security, Spec FR-003]
-- [ ] CHK005 Are session lifecycle expectations defined sufficiently to distinguish authenticated access from signed-out access without prescribing an implementation? [Clarity, Spec FR-002, FR-022]
+- [x] CHK001 Are the required registration and sign-in identifiers explicitly defined as email address and password, including the required email format and password rules? [Completeness, Spec FR-001a]
+- [x] CHK002 Is the behavior for duplicate email registration unambiguous and consistent with the requirement to avoid account-existence disclosure? [Clarity, Spec FR-001b]
+- [x] CHK003 Are successful registration, sign-in, sign-out, invalid credentials, and signed-out access flows all defined with observable outcomes? [Coverage, Spec User Stories 1–2]
+- [x] CHK004 Are password handling requirements explicit enough to prohibit readable storage, display, logging, and accidental exposure in errors or support output? [Security, Spec FR-003]
+- [x] CHK005 Are session lifecycle expectations defined sufficiently to distinguish authenticated access from signed-out access without prescribing an implementation? [Clarity, Spec FR-002, FR-022]
 
 ## Authorization and Ownership
 
-- [ ] CHK006 Does the specification identify every protected resource and action, including account settings, default ZIP updates, personal plant reads, favorites, and saved-plant recommendations? [Coverage, Spec FR-022]
-- [ ] CHK007 Is server-side ownership enforcement required for every personal read and write rather than relying on hidden links or client-provided identifiers? [Completeness, Spec FR-023]
-- [ ] CHK008 Is attempted access to another user's saved plant record defined with a safe response that does not reveal whether the record exists? [Privacy, Spec Authorization and Privacy]
-- [ ] CHK009 Are cross-user isolation requirements stated for account settings, personal plants, favorite status, and default ZIP values? [Coverage, Spec User Story 5, FR-023]
-- [ ] CHK010 Are authorization outcomes defined consistently for signed-out requests, invalid personal-record identifiers, and cross-user identifiers? [Consistency, Spec Edge Cases]
+- [x] CHK006 Does the specification identify every protected resource and action, including account settings, default ZIP updates, personal plant reads, favorites, and saved-plant recommendations? [Coverage, Spec FR-022]
+- [x] CHK007 Is server-side ownership enforcement required for every personal read and write rather than relying on hidden links or client-provided identifiers? [Completeness, Spec FR-023]
+- [x] CHK008 Is attempted access to another user's saved plant record defined with a safe response that does not reveal whether the record exists? [Privacy, Spec Authorization and Privacy]
+- [x] CHK009 Are cross-user isolation requirements stated for account settings, personal plants, favorite status, and default ZIP values? [Coverage, Spec User Story 5, FR-023]
+- [x] CHK010 Are authorization outcomes defined consistently for signed-out requests, invalid personal-record identifiers, and cross-user identifiers? [Consistency, Spec Edge Cases]
 
 ## Personal Data and Persistence
 
-- [ ] CHK011 Are all persisted user-owned data elements identified, including email identity, credential-verification data, default ZIP, personal plant association, and favorite status? [Completeness, Spec Conceptual Data Entities]
-- [ ] CHK012 Is the uniqueness rule for one personal plant per user and source plant explicit and testable? [Clarity, Spec FR-012]
-- [ ] CHK013 Is the persistence behavior after sign-out and later sign-in defined for both saved plants and favorite status? [Coverage, Spec FR-011, FR-016]
-- [ ] CHK014 Does the specification distinguish current recommendation calculations from persisted personal-plant data and prevent stale recommendation assumptions? [Consistency, Spec Watering Recommendation]
-- [ ] CHK015 Is the behavior defined when a previously saved plant is removed or becomes unavailable in the source dataset, including what user-visible information remains available? [Edge Case, Spec FR-014]
-- [ ] CHK016 Is the behavior defined when a user's saved default ZIP later becomes unavailable in the ZIP-location dataset? [Edge Case, Spec Edge Cases]
+- [x] CHK011 Are all persisted user-owned data elements identified, including email identity, credential-verification data, default ZIP, personal plant association, and favorite status? [Completeness, Spec Conceptual Data Entities]
+- [x] CHK012 Is the uniqueness rule for one personal plant per user and source plant explicit and testable? [Clarity, Spec FR-012]
+- [x] CHK013 Is the persistence behavior after sign-out and later sign-in defined for both saved plants and favorite status? [Coverage, Spec FR-011, FR-016]
+- [x] CHK014 Does the specification distinguish current recommendation calculations from persisted personal-plant data and prevent stale recommendation assumptions? [Consistency, Spec Watering Recommendation]
+- [x] CHK015 Is the behavior defined when a previously saved plant is removed or becomes unavailable in the source dataset, including what user-visible information remains available? [Edge Case, Spec FR-014]
+- [x] CHK016 Is the behavior defined when a user's saved default ZIP later becomes unavailable in the ZIP-location dataset? [Edge Case, Spec Edge Cases]
 
 ## Input Validation and Failure Handling
 
-- [ ] CHK017 Are email, password, password confirmation if applicable, ZIP, plant selection, and personal-action inputs each assigned explicit validation rules? [Completeness, Spec Validation Rules]
-- [ ] CHK018 Is it clear that a ZIP must both match the five-digit format and exist in the current ZIP-location dataset? [Clarity, Spec FR-006]
-- [ ] CHK019 Does every invalid registration or profile update scenario state that no partial or unintended state change is retained? [Failure Handling, Spec FR-009]
-- [ ] CHK020 Are missing plant data, missing ZIP-location data, and unavailable or invalid existing deterministic mock-weather inputs distinguished from invalid user input where that distinction affects user action? [Clarity, Spec FR-020]
-- [ ] CHK021 Are safe messages and recovery paths defined for authentication failures, unavailable recommendation data, and invalid personal actions without exposing secrets or personal data? [Completeness, Spec FR-004, FR-020, FR-025]
+- [x] CHK017 Are email, password, password confirmation if applicable, ZIP, plant selection, and personal-action inputs each assigned explicit validation rules? [Completeness, Spec Validation Rules]
+- [x] CHK018 Is it clear that a ZIP must both match the five-digit format and exist in the current ZIP-location dataset? [Clarity, Spec FR-006]
+- [x] CHK019 Does every invalid registration or profile update scenario state that no partial or unintended state change is retained? [Failure Handling, Spec FR-009]
+- [x] CHK020 Are missing plant data, missing ZIP-location data, and unavailable or invalid existing deterministic mock-weather inputs distinguished from invalid user input where that distinction affects user action? [Clarity, Spec FR-020]
+- [x] CHK021 Are safe messages and recovery paths defined for authentication failures, unavailable recommendation data, and invalid personal actions without exposing secrets or personal data? [Completeness, Spec FR-004, FR-020, FR-025]
 
 ## Privacy, Logging, and Information Disclosure
 
-- [ ] CHK022 Does the specification explicitly prohibit exposing credentials, secrets, and unrelated users' personal data in both user-facing messages and logs? [Security, Spec FR-025]
-- [ ] CHK023 Are generic failure requirements consistent across sign-in, duplicate registration, cross-user access, and unavailable personal-record requests? [Consistency, Spec Authorization and Privacy]
-- [ ] CHK024 Are the data-minimization expectations for personal pages and recommendation results clear enough to prevent displaying another user's account or plant information? [Privacy, Spec Authorization and Privacy]
-- [ ] CHK025 Are security-sensitive outcomes measurable through acceptance criteria or success criteria without requiring a specific authentication technology? [Measurability, Spec SC-002, SC-003]
+- [x] CHK022 Does the specification explicitly prohibit exposing credentials, secrets, and unrelated users' personal data in both user-facing messages and logs? [Security, Spec FR-025]
+- [x] CHK023 Are generic failure requirements consistent across sign-in, duplicate registration, cross-user access, and unavailable personal-record requests? [Consistency, Spec Authorization and Privacy]
+- [x] CHK024 Are the data-minimization expectations for personal pages and recommendation results clear enough to prevent displaying another user's account or plant information? [Privacy, Spec Authorization and Privacy]
+- [x] CHK025 Are security-sensitive outcomes measurable through acceptance criteria or success criteria without requiring a specific authentication technology? [Measurability, Spec SC-002, SC-003]
 
 ## Scope and Requirement Traceability
 
-- [ ] CHK026 Are external social sign-in, public profiles, sharing, administrators, reminders, multiple ZIPs, manual plants, and formula changes explicitly excluded from the account feature? [Scope, Spec Out of Scope]
-- [ ] CHK027 Is preservation of the existing anonymous plant-search and watering journey stated as a regression boundary rather than an implicit assumption? [Scope, Spec FR-021, User Story 7]
-- [ ] CHK028 Can each security and privacy requirement be traced to at least one user story, acceptance scenario, edge case, or measurable success criterion? [Traceability, Spec FR-001–FR-025]
-- [ ] CHK029 Are implementation choices intentionally constrained by the approved ASP.NET Core Razor Pages, ASP.NET Core Identity, Entity Framework Core, SQL Server LocalDB, and `net10.0` architecture while the required security and privacy outcomes remain explicit, independently testable, and traceable? [Scope, Plan Technical Context and Constitution Check]
+- [x] CHK026 Are external social sign-in, public profiles, sharing, administrators, reminders, multiple ZIPs, manual plants, and formula changes explicitly excluded from the account feature? [Scope, Spec Out of Scope]
+- [x] CHK027 Is preservation of the existing anonymous plant-search and watering journey stated as a regression boundary rather than an implicit assumption? [Scope, Spec FR-021, User Story 7]
+- [x] CHK028 Can each security and privacy requirement be traced to at least one user story, acceptance scenario, edge case, or measurable success criterion? [Traceability, Spec FR-001–FR-025]
+- [x] CHK029 Are implementation choices intentionally constrained by the approved ASP.NET Core Razor Pages, ASP.NET Core Identity, Entity Framework Core, SQL Server LocalDB, and `net10.0` architecture while the required security and privacy outcomes remain explicit, independently testable, and traceable? [Scope, Plan Technical Context and Constitution Check]
 
 ## Notes
 

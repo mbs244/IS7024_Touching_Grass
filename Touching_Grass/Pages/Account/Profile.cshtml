@@ -1,0 +1,7 @@
+@page
+@model Touching_Grass.Pages.Account.ProfileModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@{ ViewData["Title"] = "Profile"; }
+<h1>Profile</h1>
+@if (ViewData["Success"] is string success) { <div class="alert alert-success">@success</div> }
+<form method="post"><div asp-validation-summary="ModelOnly" class="text-danger"></div><label asp-for="DefaultZipCode"></label><input asp-for="DefaultZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" /><span asp-validation-for="DefaultZipCode" class="text-danger"></span><button class="btn btn-primary mt-3">Save</button></form>

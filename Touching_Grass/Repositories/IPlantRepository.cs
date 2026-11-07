@@ -21,4 +21,6 @@ public sealed record PlantMatch(PlantMatchStatus Status, Plant? Plant)
 public interface IPlantRepository
 {
     Task<PlantMatch> FindAsync(string plantName, CancellationToken cancellationToken = default);
+
+    Task<Plant?> FindByIdAsync(int id, CancellationToken cancellationToken = default);
 }

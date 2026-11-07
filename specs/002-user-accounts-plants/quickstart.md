@@ -16,6 +16,8 @@ This guide defines user-level and artifact-level verification after implementati
 - Two distinct test email addresses, two supported ZIP codes, and two source-dataset plants are available.
 - Reuse the existing `tests/Touching_Grass.UnitTests/Touching_Grass.UnitTests.csproj`, which targets `net10.0`, uses xUnit with Microsoft.NET.Test.Sdk 17.14.1, xunit 2.9.3, xunit.runner.visualstudio 3.1.4, and coverlet.collector 6.0.4, references `Touching_Grass/Touching_Grass.csproj`, and is included in `Touching_Grass.slnx`.
 - Record the inspected application/test `net10.0` targets, installed SDK, selected compatible application and test package names/versions, restore result, and build result. Record the explicit Identity password policy: RequiredLength = 8, RequiredUniqueChars = 1, RequireDigit = true, RequireLowercase = true, RequireUppercase = true, RequireNonAlphanumeric = false.
+- The application uses `Microsoft.AspNetCore.Identity.EntityFrameworkCore` 10.0.0, `Microsoft.AspNetCore.Identity.UI` 10.0.0, `Microsoft.EntityFrameworkCore.SqlServer` 10.0.0, and `Microsoft.EntityFrameworkCore.Design` 10.0.0. The application-owned migration is generated with the .NET EF Core 10.0.0 tool.
+- Apply the application migration from the application project with `dotnet ef database update --project Touching_Grass/Touching_Grass.csproj`. Do not create a second migration set in the test project.
 - Use SQL Server LocalDB for normal application development. For integration tests, create a uniquely named isolated SQL Server LocalDB database, apply the same application migration, begin from a known state, and never connect to or modify the ordinary development or production database. Do not replace these relational tests with EF Core InMemory.
 
 ## Verification flow

@@ -1,0 +1,6 @@
+@page
+@model Touching_Grass.Pages.MyPlants.DetailsModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@{ ViewData["Title"] = "Saved plant recommendation"; }
+<h1>Saved plant recommendation</h1>
+@if (Model.ErrorMessage is not null) { <div class="alert alert-warning">@Model.ErrorMessage</div><a asp-page="/Account/Profile">Update profile</a> } else if (Model.Recommendation is not null) { <h2>@Model.Recommendation.PlantDisplayName</h2><p>ZIP code: @Model.Recommendation.ZipCode</p><p class="display-6">@Model.Recommendation.NetNeedInches.ToString("0.00") in</p><p>@Model.Recommendation.Explanation</p> }
