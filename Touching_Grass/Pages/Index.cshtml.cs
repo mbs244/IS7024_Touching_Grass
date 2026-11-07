@@ -45,6 +45,20 @@ public class IndexModel : PageModel
     [Required(ErrorMessage = "Plant name is required.")]
     public string PlantName { get; set; } = string.Empty;
 
+    public async Task OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user is not null && !string.IsNullOrWhiteSpace(user.DefaultZipCode))
+        {
+            ZipCode = user.DefaultZipCode;
+        }
+    }
+
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
         ZipCode = ZipCode.Trim();
