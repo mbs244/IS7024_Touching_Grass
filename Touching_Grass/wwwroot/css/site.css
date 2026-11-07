@@ -29,3 +29,378 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.plantwise-homepage {
+  --plantwise-forest: #204f32;
+  --plantwise-deep: #173a25;
+  --plantwise-sage: #dce8d9;
+  --plantwise-pale: #f2f5ee;
+  --plantwise-cream: #fafbf7;
+  --plantwise-ink: #26342b;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(255, 255, 255, 0.8), transparent 22rem),
+    linear-gradient(135deg, var(--plantwise-pale) 0%, var(--plantwise-cream) 58%, #fff 100%);
+  color: var(--plantwise-ink);
+  overflow: hidden;
+  padding: clamp(1rem, 2vw, 1.75rem) 0 2.25rem;
+  position: relative;
+}
+
+.plantwise-homepage::before,
+.plantwise-homepage::after {
+  border: 2px solid rgba(112, 150, 112, 0.28);
+  border-radius: 100% 0 100% 0;
+  content: "";
+  height: 7rem;
+  pointer-events: none;
+  position: absolute;
+  width: 3rem;
+}
+
+.plantwise-homepage::before {
+  bottom: 1rem;
+  left: -1rem;
+  transform: rotate(-35deg);
+}
+
+.plantwise-homepage::after {
+  bottom: -1rem;
+  left: 3rem;
+  transform: rotate(20deg);
+}
+
+.plantwise-homepage__brand {
+  margin: 0 auto;
+  max-width: 70rem;
+  padding: 0 0.75rem;
+  text-align: left;
+}
+
+.plantwise-homepage__logo {
+  color: var(--plantwise-forest);
+  font-size: clamp(1.6rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.15rem !important;
+}
+
+.plantwise-homepage__logo::before {
+  border: 0.14rem solid #719a70;
+  border-radius: 100% 0 100% 0;
+  content: "";
+  display: inline-block;
+  height: 1rem;
+  margin-right: 0.55rem;
+  transform: rotate(-35deg);
+  vertical-align: 0.05em;
+  width: 0.62rem;
+}
+
+.plantwise-homepage__tagline {
+  color: #527254;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.plantwise-homepage__hero-layout {
+  align-items: center;
+  display: grid;
+  gap: clamp(1.5rem, 3.5vw, 3.5rem);
+  grid-template-columns: minmax(0, 0.9fr) minmax(22rem, 1.1fr);
+  margin: 0 auto;
+  max-width: 78rem;
+  min-height: 29rem;
+  padding: clamp(1rem, 2.5vw, 2rem) 0 1rem;
+}
+
+.plantwise-homepage__hero-copy {
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.plantwise-homepage__hero {
+  max-width: 35rem;
+  padding: 0;
+}
+
+.plantwise-homepage__hero .text-uppercase {
+  color: #527254;
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+}
+
+.plantwise-homepage__hero h1 {
+  color: var(--plantwise-deep);
+  font-size: clamp(2.45rem, 4.3vw, 4rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+  margin-bottom: 0.9rem;
+  max-width: 10ch;
+}
+
+.plantwise-homepage__hero h1::after {
+  background: #8daf83;
+  content: "";
+  display: block;
+  height: 0.22rem;
+  margin-top: 1rem;
+  width: 4.25rem;
+}
+
+.plantwise-homepage__hero .lead {
+  color: #3e5a45;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.45;
+  max-width: 34rem;
+}
+
+.plantwise-homepage__start {
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(99, 137, 101, 0.35);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 2rem rgba(32, 79, 50, 0.1) !important;
+  margin-top: 1.15rem;
+  max-width: 35rem;
+  padding: clamp(1.15rem, 2.5vw, 1.5rem);
+}
+
+.plantwise-homepage__start-heading h2 {
+  color: var(--plantwise-forest);
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+}
+
+.plantwise-homepage__start-heading p {
+  margin-bottom: 1rem;
+}
+
+.plantwise-homepage__zip-field .form-label {
+  color: var(--plantwise-deep);
+  font-weight: 600;
+}
+
+.plantwise-homepage__start .form-control {
+  border: 1px solid #9bb79a;
+  border-radius: 0.55rem;
+  color: var(--plantwise-ink);
+  font-size: 1rem;
+  min-height: 3rem;
+}
+
+.plantwise-homepage__start .form-control:focus {
+  border-color: var(--plantwise-forest);
+  box-shadow: 0 0 0 0.2rem rgba(32, 79, 50, 0.2);
+}
+
+.plantwise-homepage__start .form-text {
+  color: #536957;
+}
+
+.plantwise-homepage__start .btn-primary {
+  background-color: var(--plantwise-forest);
+  border-color: var(--plantwise-forest);
+  border-radius: 0.55rem;
+  font-weight: 700;
+  min-height: 3rem;
+  margin-top: 0.45rem;
+}
+
+.plantwise-homepage__start .btn-primary:hover,
+.plantwise-homepage__start .btn-primary:active {
+  background-color: var(--plantwise-deep);
+  border-color: var(--plantwise-deep);
+}
+
+.plantwise-homepage__start .btn-primary:focus-visible,
+.plantwise-homepage__start .form-control:focus-visible {
+  outline: 0.2rem solid #258cfb;
+  outline-offset: 0.15rem;
+}
+
+.plantwise-homepage__hero-image {
+  align-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0;
+  min-height: 27rem;
+  position: relative;
+}
+
+.plantwise-homepage__hero-image::before {
+  background: rgba(137, 169, 127, 0.24);
+  border-radius: 50%;
+  bottom: 3rem;
+  content: "";
+  height: 12rem;
+  left: -2rem;
+  position: absolute;
+  width: 12rem;
+}
+
+.plantwise-homepage__hero-image img {
+  aspect-ratio: 0.88;
+  border: 0.65rem solid rgba(255, 255, 255, 0.72);
+  border-radius: 50% 50% 48% 52%;
+  box-shadow: 0 1.5rem 3rem rgba(32, 79, 50, 0.2);
+  height: min(34rem, 48vw);
+  max-height: 34rem;
+  max-width: 100%;
+  object-fit: cover;
+  object-position: 58% center;
+  position: relative;
+  transform: translateX(3vw);
+  width: min(31rem, 43vw);
+  z-index: 1;
+}
+
+.plantwise-homepage__how-it-works {
+  margin: 0 auto;
+  max-width: 78rem;
+  padding: 1.25rem 0 0 !important;
+  position: relative;
+  z-index: 2;
+}
+
+.plantwise-homepage__how-it-works h2 {
+  color: var(--plantwise-forest);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 700;
+}
+
+.plantwise-homepage__how-it-works > .text-center .lead {
+  color: #5b715d;
+}
+
+.plantwise-homepage__how-it-works article {
+  background: rgba(220, 232, 217, 0.86);
+  border: 1px solid rgba(111, 151, 111, 0.35);
+  border-radius: 1rem;
+  box-shadow: 0 0.6rem 1.5rem rgba(32, 79, 50, 0.08);
+  height: 100%;
+  padding: 1.5rem;
+  position: relative;
+}
+
+.plantwise-homepage__how-it-works article::before {
+  border: 0.12rem solid #7fa687;
+  border-radius: 100% 0 100% 0;
+  content: "";
+  height: 0.85rem;
+  opacity: 0.8;
+  position: absolute;
+  right: 1.25rem;
+  top: 1.25rem;
+  transform: rotate(25deg);
+  width: 0.55rem;
+}
+
+.plantwise-homepage__how-it-works article .h5 {
+  color: var(--plantwise-forest);
+  font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+  .plantwise-homepage__hero-layout {
+    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.9fr);
+  }
+
+  .plantwise-homepage__hero h1 {
+    font-size: clamp(2.5rem, 5vw, 3.6rem);
+  }
+
+  .plantwise-homepage__hero-image {
+    min-height: 25rem;
+  }
+
+  .plantwise-homepage__hero-image img {
+    height: min(30rem, 55vw);
+    transform: translateX(2vw);
+    width: min(27rem, 50vw);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .plantwise-homepage {
+    padding-top: 1.25rem;
+  }
+
+  .plantwise-homepage__brand {
+    text-align: center;
+  }
+
+  .plantwise-homepage__hero-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-height: 0;
+    padding: 2rem 0 1rem;
+  }
+
+  .plantwise-homepage__hero-copy {
+    order: 1;
+    width: 100%;
+  }
+
+  .plantwise-homepage__hero {
+    max-width: 42rem;
+  }
+
+  .plantwise-homepage__hero h1 {
+    max-width: 12ch;
+  }
+
+  .plantwise-homepage__start {
+    margin-top: 1.35rem;
+    max-width: none;
+  }
+
+  .plantwise-homepage__hero-image {
+    min-height: 0;
+    order: 2;
+    width: 100%;
+  }
+
+  .plantwise-homepage__hero-image img {
+    aspect-ratio: 1 / 0.82;
+    border-width: 0.45rem;
+    height: auto;
+    max-height: none;
+    transform: none;
+    width: min(100%, 30rem);
+  }
+
+  .plantwise-homepage__how-it-works {
+    padding-top: 1rem !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .plantwise-homepage__hero h1 {
+    font-size: clamp(2.35rem, 12vw, 3.15rem);
+  }
+
+  .plantwise-homepage__hero-image {
+    justify-content: center;
+  }
+
+  .plantwise-homepage__hero-image::before {
+    bottom: -1rem;
+    left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plantwise-homepage *,
+  .plantwise-homepage *::before,
+  .plantwise-homepage *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -26,7 +26,7 @@ public class IndexModel : PageModel
         _logger = logger;
     }
 
-    [BindProperty]
+    [BindProperty(SupportsGet = true)]
     [Display(Name = "ZIP code")]
     [Required(ErrorMessage = "ZIP code is required.")]
     [RegularExpression(@"^\d{5}$", ErrorMessage = "Enter a valid five-digit ZIP code.")]
