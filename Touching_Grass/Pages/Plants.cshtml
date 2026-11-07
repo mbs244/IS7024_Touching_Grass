@@ -1,0 +1,58 @@
+@page
+@model PlantsModel
+@{
+    ViewData["Title"] = "Plants";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <h1 class="display-6">Search supported plants</h1>
+        <p class="lead">Search by common or scientific name to find a supported plant and its water factor.</p>
+
+        <form method="get" class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label asp-for="SearchTerm" class="form-label">Plant name</label>
+                    <input asp-for="SearchTerm" class="form-control" aria-describedby="plant-search-help" />
+                    <div id="plant-search-help" class="form-text">Enter all or part of a common or scientific name.</div>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </div>
+        </form>
+
+        @if (Model.ErrorMessage is not null)
+        {
+            <div class="alert alert-warning" role="alert">@Model.ErrorMessage</div>
+        }
+        else if (Model.NotFoundMessage is not null)
+        {
+            <div class="alert alert-info" role="status">@Model.NotFoundMessage</div>
+        }
+        else if (Model.HasSearched && Model.Results.Count > 0)
+        {
+            <p role="status">@Model.Results.Count matching plants found.</p>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <caption>Plants matching "@Model.SearchTerm"</caption>
+                    <thead>
+                        <tr>
+                            <th scope="col">Common name</th>
+                            <th scope="col">Scientific name</th>
+                            <th scope="col">Water factor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var plant in Model.Results)
+                        {
+                            <tr>
+                                <td>@plant.CommonName</td>
+                                <td>@plant.ScientificName</td>
+                                <td>@plant.WaterFactor.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
