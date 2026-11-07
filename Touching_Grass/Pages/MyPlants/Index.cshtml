@@ -1,0 +1,6 @@
+@page
+@model Touching_Grass.Pages.MyPlants.IndexModel
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@{ ViewData["Title"] = "My plants"; }
+<h1>My plants</h1>
+@if (Model.Plants.Count == 0) { <p>You have not saved any plants yet.</p> } else { <ul class="list-group">@foreach (var plant in Model.Plants) { <li class="list-group-item d-flex justify-content-between"><a asp-page="Details" asp-route-id="@plant.Id">@plant.CommonNameSnapshot (@plant.ScientificNameSnapshot)</a><form method="post" asp-page-handler="ToggleFavorite"><input type="hidden" name="id" value="@plant.Id" /><button type="submit" class="btn btn-link">@(plant.IsFavorite ? $"Remove {plant.CommonNameSnapshot} from favorites" : $"Add {plant.CommonNameSnapshot} to favorites")</button></form></li> }</ul> }

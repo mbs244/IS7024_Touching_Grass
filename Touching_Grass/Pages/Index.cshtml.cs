@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
+using Microsoft.AspNetCore.Identity;
+using Touching_Grass.Models;
 
 namespace Touching_Grass.Pages;
 
@@ -13,17 +15,23 @@ public class IndexModel : PageModel
     private readonly IWateringCalculatorService _wateringCalculator;
     private readonly IZipLookupService _zipLookupService;
     private readonly ILogger<IndexModel> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserPlantService _userPlantService;
 
     public IndexModel(
         IPlantRepository plantRepository,
         IWateringCalculatorService wateringCalculator,
         IZipLookupService zipLookupService,
-        ILogger<IndexModel> logger)
+        ILogger<IndexModel> logger,
+        UserManager<ApplicationUser> userManager,
+        IUserPlantService userPlantService)
     {
         _plantRepository = plantRepository;
         _wateringCalculator = wateringCalculator;
         _zipLookupService = zipLookupService;
         _logger = logger;
+        _userManager = userManager;
+        _userPlantService = userPlantService;
     }
 
     [BindProperty]
@@ -36,6 +44,20 @@ public class IndexModel : PageModel
     [Display(Name = "Plant name")]
     [Required(ErrorMessage = "Plant name is required.")]
     public string PlantName { get; set; } = string.Empty;
+
+    public async Task OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user is not null && !string.IsNullOrWhiteSpace(user.DefaultZipCode))
+        {
+            ZipCode = user.DefaultZipCode;
+        }
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
@@ -70,6 +92,10 @@ public class IndexModel : PageModel
             }
 
             var recommendation = await _wateringCalculator.CalculateAsync(location, plantMatch.Plant, cancellationToken);
+            if (_userManager.GetUserId(User) is string userId)
+            {
+                await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
+            }
             TempData["WaterRecommendation"] = JsonSerializer.Serialize(recommendation);
             return RedirectToPage("/Results", new { zipCode = ZipCode, plantName = PlantName });
         }
