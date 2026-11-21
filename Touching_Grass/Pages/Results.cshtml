@@ -22,7 +22,10 @@
                     <h2 id="recommendation-heading" class="h4">@Model.Recommendation.PlantDisplayName</h2>
                     <p class="text-muted mb-3">ZIP code: @Model.Recommendation.ZipCode</p>
                     <p class="display-6">@Model.Recommendation.NetNeedInches.ToString("0.00") in</p>
-                    <p class="lead">additional watering needed this week</p>
+                    @if (Model.WaterStatusMessage is not null)
+                    {
+                        <p class="lead" role="status">@Model.WaterStatusMessage.Message</p>
+                    }
                     <p class="mb-0">@Model.Recommendation.Explanation</p>
                 </div>
             </div>
