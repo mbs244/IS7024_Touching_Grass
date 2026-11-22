@@ -90,7 +90,20 @@ public class IndexModel : PageModel
             var recommendation = await _wateringCalculator.CalculateAsync(location, plantMatch.Plant, cancellationToken);
             if (User.FindFirstValue(ClaimTypes.NameIdentifier) is string userId)
             {
-                await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
+                try
+                {
+                    await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception,
+                        "Optional user-plant recommendation save failed for user {UserId}; returning the calculation result.",
+                        userId);
+                }
             }
             TempData["WaterRecommendation"] = JsonSerializer.Serialize(recommendation);
             return RedirectToPage("/Results", new { zipCode = ZipCode, plantName = PlantName });
@@ -100,7 +113,7 @@ public class IndexModel : PageModel
             ModelState.AddModelError(string.Empty, "The request was canceled. Please try again.");
             return Page();
         }
-        catch (InvalidOperationException exception)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogError(exception, "Local PlantWise data could not be loaded.");
             ModelState.AddModelError(string.Empty, "PlantWise data is temporarily unavailable. Please try again.");
