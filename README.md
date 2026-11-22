@@ -165,19 +165,18 @@ active migrations under `Touching_Grass/Data/Migrations` are generated for MySQL
 SQL Server migrations are retained under `Touching_Grass/Data/Migrations.SqlServerArchive` for
 history only and are excluded from runtime compilation.
 
-Set `ConnectionStrings:DefaultConnection` through user secrets or an environment variable for
-local development. For example:
+Visual Studio/local execution uses JSON-backed services, process-local Identity, and in-memory
+saved plants in Development mode. No relational database or connection string is required,
+and local startup does not run migrations. Local accounts and saved plants are discarded
+when the application process restarts.
 
-```powershell
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=plantwise_dev;User ID=plantwise;Password=<local-only-password>"
-```
-
-Azure App Service `PlantwiseWaterTracking` must provide the same logical setting through a
-protected application setting or connection-string setting. Production values must never be
-committed to JSON, workflow files, logs, or published artifacts. Startup validates the setting,
-applies pending EF migrations, and only then exposes `/health`; it never uses LocalDB,
-`EnsureCreated`, or automatic production rollback. The MVP assumes one active App Service
-instance because startup migration coordination must be revisited before scale-out.
+Azure App Service `PlantwiseWaterTracking` must provide `MYSQLCONNSTR_localdb` through protected
+configuration. Production values must never be committed to JSON, workflow files, logs, or
+published artifacts. Azure startup validates this setting, applies pending EF migrations,
+and only then exposes `/health`; missing configuration prevents readiness without a local
+fallback. The application never uses LocalDB, `EnsureCreated`, or automatic production
+rollback. The MVP assumes one active App Service instance because startup migration
+coordination must be revisited before scale-out.
 
 GitHub Actions validates migrations only against a disposable database when
 `MYSQL_VALIDATION_CONNECTION_STRING` is supplied. It never applies migrations to production.
