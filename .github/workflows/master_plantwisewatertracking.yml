@@ -47,8 +47,8 @@ jobs:
             $env:DOTNET_ENVIRONMENT = 'Production'
             $env:ASPNETCORE_ENVIRONMENT = 'Production'
             $env:MYSQLCONNSTR_localdb = $env:MYSQL_VALIDATION_CONNECTION_STRING
-            dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
-            dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
+            dotnet ef database update --configuration Release --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
+            dotnet ef database update --configuration Release --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
           }
 
       - name: dotnet publish
