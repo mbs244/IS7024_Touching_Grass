@@ -8,7 +8,7 @@ The release MUST NOT proceed unless all are true:
 - Dependencies restore successfully.
 - The application builds successfully.
 - The complete automated test suite passes.
-- The MySQL-compatible migration model validates against a clean disposable database.
+- When a disposable MySQL-compatible validation target is configured, migration validation passes against it; otherwise, external validation is recorded as skipped. Azure startup migration, readiness, and smoke verification remain mandatory.
 - The protected production connection configuration is available to the deployed App Service without being printed.
 - The MySQL migration model validates against a clean disposable database when available; production migration execution is reserved for application startup.
 
