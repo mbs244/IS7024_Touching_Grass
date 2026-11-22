@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Text.Json;
+using Touching_Grass.Models;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
 
@@ -15,19 +17,22 @@ public class IndexModel : PageModel
     private readonly IZipLookupService _zipLookupService;
     private readonly ILogger<IndexModel> _logger;
     private readonly IUserPlantService _userPlantService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public IndexModel(
         IPlantRepository plantRepository,
         IWateringCalculatorService wateringCalculator,
         IZipLookupService zipLookupService,
         ILogger<IndexModel> logger,
-        IUserPlantService userPlantService)
+        IUserPlantService userPlantService,
+        UserManager<ApplicationUser> userManager)
     {
         _plantRepository = plantRepository;
         _wateringCalculator = wateringCalculator;
         _zipLookupService = zipLookupService;
         _logger = logger;
         _userPlantService = userPlantService;
+        _userManager = userManager;
     }
 
     [BindProperty]
@@ -48,10 +53,10 @@ public class IndexModel : PageModel
             return;
         }
 
-        var defaultZipCode = User.FindFirstValue("DefaultZipCode");
-        if (!string.IsNullOrWhiteSpace(defaultZipCode))
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (!string.IsNullOrWhiteSpace(currentUser?.DefaultZipCode))
         {
-            ZipCode = defaultZipCode;
+            ZipCode = currentUser.DefaultZipCode;
         }
     }
 
