@@ -41,11 +41,11 @@ jobs:
           MYSQL_VALIDATION_CONNECTION_STRING: ${{ secrets.MYSQL_VALIDATION_CONNECTION_STRING }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:MYSQL_VALIDATION_CONNECTION_STRING)) {
-            Write-Host 'No disposable MySQL validation database configured; validating migration generation only.'
+            Write-Host 'No disposable MySQL validation database configured; external migration validation skipped.'
             dotnet ef migrations script --idempotent --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj --output "$env:RUNNER_TEMP/mysql-migrations.sql"
           } else {
             Write-Host 'Applying migrations only to the configured disposable validation database.'
-            $env:ConnectionStrings__DefaultConnection = $env:MYSQL_VALIDATION_CONNECTION_STRING
+            $env:MYSQLCONNSTR_localdb = $env:MYSQL_VALIDATION_CONNECTION_STRING
             dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
             dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
           }

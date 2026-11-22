@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Text.Json;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
-using Microsoft.AspNetCore.Identity;
-using Touching_Grass.Models;
 
 namespace Touching_Grass.Pages;
 
@@ -15,7 +14,6 @@ public class IndexModel : PageModel
     private readonly IWateringCalculatorService _wateringCalculator;
     private readonly IZipLookupService _zipLookupService;
     private readonly ILogger<IndexModel> _logger;
-    private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserPlantService _userPlantService;
 
     public IndexModel(
@@ -23,14 +21,12 @@ public class IndexModel : PageModel
         IWateringCalculatorService wateringCalculator,
         IZipLookupService zipLookupService,
         ILogger<IndexModel> logger,
-        UserManager<ApplicationUser> userManager,
         IUserPlantService userPlantService)
     {
         _plantRepository = plantRepository;
         _wateringCalculator = wateringCalculator;
         _zipLookupService = zipLookupService;
         _logger = logger;
-        _userManager = userManager;
         _userPlantService = userPlantService;
     }
 
@@ -52,10 +48,10 @@ public class IndexModel : PageModel
             return;
         }
 
-        var user = await _userManager.GetUserAsync(User);
-        if (user is not null && !string.IsNullOrWhiteSpace(user.DefaultZipCode))
+        var defaultZipCode = User.FindFirstValue("DefaultZipCode");
+        if (!string.IsNullOrWhiteSpace(defaultZipCode))
         {
-            ZipCode = user.DefaultZipCode;
+            ZipCode = defaultZipCode;
         }
     }
 
@@ -92,7 +88,7 @@ public class IndexModel : PageModel
             }
 
             var recommendation = await _wateringCalculator.CalculateAsync(location, plantMatch.Plant, cancellationToken);
-            if (_userManager.GetUserId(User) is string userId)
+            if (User.FindFirstValue(ClaimTypes.NameIdentifier) is string userId)
             {
                 await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
             }
