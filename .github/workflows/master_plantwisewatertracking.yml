@@ -88,6 +88,11 @@ jobs:
           slot-name: 'Production'
           package: .
 
+      - name: Check out smoke-test source
+        uses: actions/checkout@v4
+        with:
+          path: smoke-source
+
       - name: Required post-deployment smoke test
         shell: pwsh
         env:
@@ -95,5 +100,5 @@ jobs:
           SMOKE_TEST_EMAIL: ${{ secrets.SMOKE_TEST_EMAIL }}
           SMOKE_TEST_PASSWORD: ${{ secrets.SMOKE_TEST_PASSWORD }}
           SMOKE_TEST_ZIP: ${{ secrets.SMOKE_TEST_ZIP }}
-        run: ./scripts/smoke-test.ps1
+        run: ./smoke-source/scripts/smoke-test.ps1
           
