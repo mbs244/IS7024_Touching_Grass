@@ -41,8 +41,8 @@ public sealed class RegisterModel : PageModel
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
-        Email = Email.Trim();
-        DefaultZipCode = DefaultZipCode.Trim();
+        Email = (Email ?? string.Empty).Trim();
+        DefaultZipCode = (DefaultZipCode ?? string.Empty).Trim();
         if (ModelState.IsValid && await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null)
         {
             ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
