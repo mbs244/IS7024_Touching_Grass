@@ -17,7 +17,7 @@ public sealed class LoginModel : PageModel
     {
         Email = Email.Trim();
         if (!ModelState.IsValid) { Password = string.Empty; return Page(); }
-        var result = await _signInManager.PasswordSignInAsync(Email, Password, false, false);
+        var result = await _signInManager.PasswordSignInAsync(Email, Password, false, lockoutOnFailure: true);
         Password = string.Empty;
         if (!result.Succeeded) { ModelState.AddModelError(string.Empty, "Invalid email or password."); return Page(); }
         return LocalRedirect(returnUrl ?? Url.Content("~/"));
