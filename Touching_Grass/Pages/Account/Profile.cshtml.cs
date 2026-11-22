@@ -24,7 +24,13 @@ public sealed class ProfileModel : PageModel
         if (ModelState.IsValid && await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null) ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
         if (!ModelState.IsValid) { DefaultZipCode = user.DefaultZipCode; return Page(); }
         user.DefaultZipCode = DefaultZipCode;
-        await _userManager.UpdateAsync(user);
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            ModelState.AddModelError(string.Empty, "Your profile could not be saved. Please try again.");
+            DefaultZipCode = user.DefaultZipCode;
+            return Page();
+        }
         ViewData["Success"] = "Your default ZIP code was updated.";
         return Page();
     }

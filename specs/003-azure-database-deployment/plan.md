@@ -6,9 +6,9 @@
 
 ## Summary
 
-The implementation will retain the existing .NET 10 Razor Pages and ASP.NET Core Identity architecture while replacing the SQL Server EF Core provider and SQL Server-specific migration set with Oracle `MySql.EntityFrameworkCore` 10.0.12 and validated MySQL migrations. The MVP database will persist Identity accounts, account profile/default ZIP data, saved plants/favorites, and audit timestamps. Production configuration will come from protected Azure App Service settings. GitHub Actions validates migrations only; application startup applies pending production migrations before readiness, and a required smoke test gates release success.
+The implementation will retain the existing .NET 10 Razor Pages and ASP.NET Core Identity architecture. Visual Studio/local execution will remain database-free and will continue using the existing JSON-backed and in-memory services; local authentication and user-data persistence are not required. Azure App Service will use Oracle `MySql.EntityFrameworkCore` 10.0.12 through the protected `MYSQLCONNSTR_localdb` connection string, persist Identity and user-owned data, and apply pending migrations during startup before readiness.
 
-The current SQL Server migration artifacts will not be translated manually. They will be preserved in Git history and moved outside the active runtime migration directory. The application model will be validated against MySQL, then a provider-compatible migration set will be generated and tested in an isolated database. Production migration execution occurs only during application startup after deployment; readiness and the required smoke test fail if startup migration fails.
+The current SQL Server migration artifacts will not be translated manually. They will be preserved in Git history and moved outside the active runtime migration directory. When a disposable MySQL-compatible validation target is configured, the Azure application model and provider-compatible migration set will be validated against it; when no target is configured, validation is recorded as skipped. In both cases, Azure startup migration, readiness, and the required smoke test remain mandatory. Production migration execution occurs only during Azure startup; local startup must not resolve a database provider or execute migrations.
 
 ## Technical Context
 
@@ -16,9 +16,9 @@ The current SQL Server migration artifacts will not be translated manually. They
 
 **Primary Dependencies**: ASP.NET Core Razor Pages, ASP.NET Core Identity, Entity Framework Core 10.0.x, Oracle `MySql.EntityFrameworkCore` 10.0.12, xUnit test stack, GitHub Actions Azure login and Web Apps Deploy actions.
 
-**Storage**: Azure MySQL In-App for the free MVP; isolated MySQL-compatible test database; JSON source data remains read-only application data unless separately expanded.
+**Storage**: Production storage uses Azure MySQL In-App. Development Mode uses the existing JSON-backed and in-memory services. A configured disposable MySQL-compatible validation target may be used for conditional external migration validation but is not required.
 
-**Testing**: Existing xUnit unit tests plus database-backed integration tests for migrations, Identity, ownership, restart persistence, and deployment smoke verification.
+**Testing**: Existing xUnit unit tests plus Azure persistence integration tests for Identity, ownership, restart persistence, startup migrations, readiness, and deployment smoke verification. When a configured disposable MySQL-compatible validation target exists, integration tests also validate migration initialization, upgrade, and rerun behavior; when no target exists, validation is recorded as skipped.
 
 **Target Platform**: Azure App Service `PlantwiseWaterTracking`, production slot, deployed from GitHub Actions after merge to `master`.
 
@@ -26,14 +26,14 @@ The current SQL Server migration artifacts will not be translated manually. They
 
 **Performance Goals**: In a production-like Azure environment, measure the home page, registration page, login page, authenticated profile or dashboard, and one representative user-data save-and-retrieve operation. Exclude documented warm-up runs, perform at least 10 timed end-to-end measurements for each operation, and require at least 95% of measurements for each operation to complete within three seconds. Record the environment, run count, warm-up handling, results, and pass/fail outcome. This is representative MVP performance validation, not enterprise load testing.
 
-**Constraints**: Free MVP cost target; no secrets in source control; no LocalDB fallback in Azure; provider-specific migrations; no email verification or password reset; no social login, MFA, roles, analytics, or calculation history.
+**Constraints**: Free MVP cost target; local execution must not require MySQL, SQLite, SQL Server, Docker, or any relational database; no secrets in source control; Azure requires `MYSQLCONNSTR_localdb` with no local-mode fallback; no email verification or password reset; no social login, MFA, roles, analytics, or calculation history.
 
 **Scale/Scope**: Small classroom/project MVP; account profile/default ZIP, saved plants/favorites, timestamps, and Identity records only. MySQL In-App operational limits must be documented and treated as a release constraint.
 
 ## Current-State Analysis
 
-- `Touching_Grass/Program.cs` registers `ApplicationDbContext` with `UseSqlServer` and falls back between `ConnectionStrings:DefaultConnection` and an Azure SQL-named environment variable.
-- `Touching_Grass/appsettings.json` contains a LocalDB SQL Server connection string, which is not valid production configuration for Azure MySQL.
+- `Touching_Grass/Program.cs` currently registers `ApplicationDbContext` with a relational provider during all environments, which conflicts with the approved database-free local execution mode.
+- `Touching_Grass/appsettings.Development.json` must not introduce a relational connection string; local execution uses the existing JSON-backed and in-memory services.
 - `Touching_Grass/Touching_Grass.csproj` references SQL Server EF Core and Identity EF packages.
 - `Touching_Grass/Data/ApplicationDbContext.cs` contains Identity and `UserPlant` model configuration, including user ownership and uniqueness rules.
 - `Touching_Grass/Data/Migrations/` contains SQL Server-specific generated migration and snapshot artifacts. They cannot be treated as MySQL migrations.
@@ -42,15 +42,25 @@ The current SQL Server migration artifacts will not be translated manually. They
 
 ## Target-State Architecture
 
-1. Razor Pages and Identity UI receive registration, login, logout, and authenticated user-data requests.
-2. ASP.NET Core Identity uses `ApplicationDbContext` backed by the MySQL-compatible EF Core provider.
+1. Razor Pages and existing JSON/in-memory services handle local development flows without relational persistence.
+2. In Azure, Razor Pages and Identity UI receive registration, login, logout, and authenticated user-data requests backed by MySQL.
 3. `ApplicationUser` stores account identity and default ZIP profile data.
 4. `UserPlant` stores saved plant/favorite data, snapshots, timestamps, and an immutable user relationship.
-5. Production connection settings are supplied by Azure App Service protected configuration under the logical `DefaultConnection` contract.
-6. GitHub Actions restores, builds, tests, validates MySQL migrations against a disposable database when available, publishes, and deploys to `PlantwiseWaterTracking`; startup then migrates the production database, gates readiness, and the workflow runs required smoke verification.
+5. Azure production connection settings are supplied by the protected App Service `MYSQLCONNSTR_localdb` connection-string setting.
+6. GitHub Actions restores, builds, tests, and runs local-mode validation; when a disposable MySQL-compatible validation target is configured, it validates migrations and blocks deployment on failure, otherwise it records validation as skipped and may continue. It then publishes and deploys to `PlantwiseWaterTracking`; Azure startup migration, readiness, and required smoke verification always follow.
 7. JSON plant and location source data remains separate from relational user-owned data unless a later approved feature changes that boundary.
 
 ## Technical Architecture Overview
+
+### Environment composition boundary
+
+`Program.cs` is the startup composition boundary. It selects the execution mode from the
+ASP.NET Core hosting environment: Development uses the existing JSON-backed repositories and
+in-memory services and does not register or resolve `ApplicationDbContext`; Azure production
+requires `MYSQLCONNSTR_localdb`, registers EF Core Identity and user-data services, and enables
+the MySQL provider. The deployment target and hosting environment, rather than a local database
+choice, determine the mode. Startup migration orchestration is registered only in Azure mode,
+so local startup can succeed without a relational service or migration history.
 
 ### Provider transition
 
@@ -80,7 +90,7 @@ The current SQL Server migration artifacts will not be translated manually. They
 - The production logical database is Azure MySQL In-App for the free MVP.
 - The schema includes Identity tables, application-user profile/default ZIP data, `UserPlant`, ownership foreign-key behavior, unique constraints, indexes, and migration history.
 - The existing SQL Server migrations are historical input only and must be replaced with MySQL-compatible generated migrations.
-- A clean disposable MySQL database is the minimum migration validation target before production configuration is used.
+- A disposable MySQL validation target is used when configured and available; it is not required before implementation or deployment for this student project.
 - The production migration must be non-destructive and must never drop or reset user data as part of routine release.
 - MySQL In-App limitations around durability, backup, scaling, and availability are recorded as accepted MVP risk and revisited before growth beyond the project scope.
 
@@ -103,15 +113,16 @@ See [data-model.md](./data-model.md). The authoritative relationship is `Applica
 
 ### Local development
 
-- Replace the LocalDB-only assumption with a non-production MySQL-compatible connection supplied through user secrets or local environment configuration.
-- Keep local database credentials outside tracked JSON.
-- Keep test database configuration isolated from the developer database.
+- Do not register a relational database provider during Visual Studio/local execution.
+- Continue using the existing JSON-backed and in-memory services.
+- Do not require local authentication persistence, user-data persistence, MySQL, SQLite, SQL Server, Docker, or a connection string.
+- Do not execute startup database migrations locally.
 
 ### Azure production
 
-- Configure the MySQL In-App connection through Azure App Service protected application settings or connection-string settings.
-- Resolve the setting consistently as `ConnectionStrings:DefaultConnection`.
-- Do not rely on `appsettings.Development.json` or LocalDB in Azure.
+- Configure the MySQL In-App connection through the Azure App Service `MYSQLCONNSTR_localdb` connection-string setting.
+- Resolve `MYSQLCONNSTR_localdb` explicitly in the Azure environment.
+- Do not rely on `appsettings.Development.json` or local JSON/in-memory mode in Azure.
 - Treat missing production configuration as a hard, safe startup/health failure rather than falling back to a local database.
 - Verify that the configured App Service resource is `PlantwiseWaterTracking` and that the workflow and publish metadata do not target a different site.
 
@@ -132,29 +143,30 @@ Required job order:
 2. Set up the supported .NET 10 SDK.
 3. Restore dependencies.
 4. Build the solution in Release mode.
-5. Run the complete unit and required database-backed test suite.
-6. Validate the MySQL migration model against a disposable MySQL-compatible database when available.
-7. Publish the application artifact.
-8. Upload/download the artifact between build and deployment jobs as appropriate.
-9. Authenticate to Azure.
-10. Deploy to `PlantwiseWaterTracking` production.
-11. Application startup validates production configuration and applies only pending migrations through Oracle MySql.EntityFrameworkCore.
-12. The application becomes ready only after startup migration succeeds.
-13. Run the required post-deployment smoke test; fail the workflow on startup, migration, health, authentication, persistence, or authorization failure.
+5. Run the complete automated test suite.
+6. Run automated local-mode validation tests against the checked-out commit.
+7. Validate the MySQL migration model against a configured disposable MySQL-compatible validation target; if no such target is present, record the skipped external validation without blocking deployment.
+8. Publish the application artifact.
+9. Upload/download the artifact between build and deployment jobs as appropriate.
+10. Authenticate to Azure.
+11. Deploy to `PlantwiseWaterTracking` production.
+12. Azure application startup validates `MYSQLCONNSTR_localdb`.
+13. Azure application startup applies only pending migrations through Oracle MySql.EntityFrameworkCore, after which readiness becomes healthy.
+14. Run the required post-deployment smoke test; fail the workflow on startup, migration, health, authentication, persistence, or authorization failure.
 
-Any failure through migration validation must prevent publishing/deployment. Startup migration failure must make readiness and the required smoke test fail, which makes the workflow unsuccessful. Diagnostic output must redact credentials and connection-string values.
+If a configured disposable MySQL-compatible validation target is present and validation fails, deployment is blocked. If no such target is present, validation is recorded as skipped and deployment may continue. Azure startup migration remains mandatory; startup migration failure must make readiness and the required smoke test fail, which makes the workflow unsuccessful. Diagnostic output must redact credentials and connection-string values.
 
 ## Migration Architecture
 
 - Use the validated MySQL provider at design time and runtime.
 - Generate a new MySQL migration set from the final `ApplicationDbContext` model; do not hand-edit SQL Server-generated migration operations into MySQL syntax.
 - Preserve Identity and user-owned data model requirements in the model snapshot.
-- Apply the migration to a clean disposable database, rerun it to prove idempotent release behavior, and test upgrades from the prior application state where applicable.
-- GitHub Actions validates migration artifacts only against a disposable database when available; it does not apply production migrations.
+- When a configured disposable MySQL-compatible validation target exists, apply the migration to it, rerun it to prove idempotent release behavior, and test upgrades from the prior application state where applicable. If no target exists, record validation as skipped and continue with mandatory Azure startup migration, readiness, and smoke-test verification.
+- GitHub Actions validates migration artifacts against the configured disposable MySQL-compatible validation target when present. If no target exists, the workflow records validation as skipped and continues; it never applies production migrations.
 - During startup, apply only pending migrations through Oracle MySql.EntityFrameworkCore before readiness or normal authenticated/data-dependent traffic.
 - Limit the MVP to one active App Service instance; disable scale-out or remain at one instance, use provider-supported migration locking when available, and reconsider startup migration before horizontal scaling.
 - Do not use `EnsureCreated` or automatically roll back production migrations. Migration execution must remain idempotent and preserve EF migration history.
-- Treat any migration failure as a release blocker; do not reset or drop production schema to recover.
+- Treat Azure startup migration failure as a release blocker. Treat failure against a configured disposable validation target as a deployment blocker; a missing validation target is a recorded skip. Do not reset or drop production schema to recover.
 
 ## Security Architecture
 
@@ -175,21 +187,25 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 - Login/logout behavior and authentication state.
 - User-data ownership predicates and cross-user denial.
 - Data mapping and timestamp rules.
-- Configuration selection and no-LocalDB-fallback behavior.
+- Local-mode startup without relational services and Azure configuration selection requiring `MYSQLCONNSTR_localdb`.
+- Automated configuration-selection tests prove Development mode selects JSON/in-memory services and Azure mode requires `MYSQLCONNSTR_localdb`.
 
 ### Database integration tests
 
-- Provider can create the schema from the MySQL migration.
-- Migration rerun is safe.
-- Identity registration and login records persist.
-- Default ZIP, saved plants/favorites, snapshots, and timestamps persist.
-- Two users cannot access one another's records.
-- Existing records survive a schema-compatible upgrade.
+#### Conditional external migration validation
+
+When a configured disposable MySQL-compatible validation target is present, tests validate clean schema initialization, ASP.NET Core Identity schema creation, application schema creation, supported upgrade behavior, and safe migration reruns. Failure blocks publishing and deployment.
+
+When no configured disposable MySQL-compatible validation target is present, these external checks are recorded as skipped and do not block deployment.
+
+#### Mandatory Azure deployment verification
+
+Every Azure release must validate production configuration, execute pending migrations during Azure App Service startup, prevent readiness until migration succeeds, and run post-deployment smoke testing. These checks are mandatory regardless of whether external validation ran or was skipped.
 
 ### CI/CD tests
 
 - Failing unit tests block deployment.
-- CI migration-validation failure blocks publishing and deployment. Application-startup migration occurs after deployment inside Azure App Service; startup-migration failure prevents readiness, the required post-deployment smoke test detects the readiness failure, and the GitHub Actions workflow is unsuccessful.
+- If a configured disposable MySQL-compatible validation target exists and migration validation fails, publishing and deployment are blocked. If no configured disposable MySQL-compatible validation target is present, validation is recorded as skipped and deployment may continue. Application-startup migration occurs after deployment inside Azure App Service; startup-migration failure prevents readiness, the required post-deployment smoke test detects the readiness failure, and the GitHub Actions workflow is unsuccessful.
 - Published artifact is generated only after verification.
 - Post-deployment smoke flow completes against the intended App Service.
 
@@ -201,20 +217,20 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 - Record MySQL In-App limitations and workflow evidence in GitHub Actions logs/artifacts, Azure App Service logs, and intentionally committed repository evidence under `specs/003-azure-database-deployment/evidence/` only if sanitized evidence is deliberately retained. Never commit secrets, raw connection strings, or sensitive logs.
 - Validate WCAG 2.1 AA keyboard operation, labels, validation, focus, errors, contrast, and non-color-only cues for registration, login, logout, profile, ZIP-code, and saved-plant/favorite flows.
 - Measure the five defined operations—home page, registration page, login page, authenticated profile or dashboard, and one representative user-data save-and-retrieve operation—in a production-like Azure environment. Exclude documented warm-up runs, perform at least 10 timed end-to-end measurements for each operation, require at least 95% within three seconds for each operation, and record the environment, run count, warm-up handling, results, and pass/fail outcome. Keep this as representative MVP validation, not enterprise load testing.
-- Run negative database tests for missing configuration, invalid credentials, unreachable database, and migration failure; verify startup/readiness and smoke-test failure, no LocalDB fallback or `EnsureCreated`, generic user output, and actionable redacted logs.
+- Run local-mode tests proving no database startup dependency, plus Azure negative tests for missing configuration, invalid credentials, unreachable database, and migration failure; verify Azure readiness and smoke-test failure, no local-mode fallback or `EnsureCreated`, generic user output, and actionable redacted logs.
 
 ## Rollback Strategy
 
 ### Application-only failure before startup migration
 
-- Stop before deployment when restore, build, tests, or migration validation fail.
+- Stop before deployment when restore or build fails, automated tests fail, or migration validation fails against a configured disposable MySQL-compatible validation target. If no configured disposable MySQL-compatible validation target is present, record validation as skipped and continue to mandatory Azure startup migration, readiness, and smoke verification.
 - Preserve the last known-good deployed artifact and database state.
 
 ### Startup migration failure
 
 - The application must not report readiness; the required smoke test must fail and the workflow must be unsuccessful.
 - Inspect startup and App Service logs without exposing credentials.
-- Correct the migration/provider/configuration issue and rerun CI validation against an isolated database first.
+- Correct the migration/provider/configuration issue and rerun CI validation against the configured disposable MySQL-compatible validation target, when present; otherwise verify the correction through mandatory Azure startup migration, readiness, and smoke testing.
 - Do not delete migration history or reset the production database.
 - Do not automatically roll back production migrations. If a partially applied migration cannot be safely repaired, use a documented data-preserving recovery or forward-fix procedure.
 
@@ -228,7 +244,7 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 
 | Risk | Impact | Mitigation | Gate |
 |------|--------|------------|------|
-| MySQL provider is incompatible with .NET 10/EF Core 10 | High | Validate package compatibility and clean-database migration before implementation continues | Phase 1 |
+| MySQL provider is incompatible with .NET 10/EF Core 10 | High | Validate package compatibility and the configured disposable MySQL-compatible validation target, when present, before implementation continues | Phase 1 |
 | SQL Server migrations are reused on MySQL | High | Generate a new provider-compatible migration set and inspect generated model/schema | Phase 1 |
 | MySQL In-App lacks production-grade durability or backups | High | Accept only for free MVP, document limits, keep scope small, define managed-database follow-up | Phase 5 |
 | Azure connection string is missing or malformed | High | Protected App Service configuration, explicit startup/health failure, negative tests | Phase 4 |
@@ -248,23 +264,26 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 
 - Approved specification and research decisions exist.
 - Azure MySQL In-App connection format and runtime availability are confirmed.
-- A disposable MySQL-compatible test database is available.
+- A configured disposable MySQL-compatible validation target is optional.
+- Its absence does not prevent entry into the phase.
 
 **Exit criteria**:
 
 - The application has one validated MySQL-compatible EF provider.
 - Runtime configuration no longer uses `UseSqlServer` for the target deployment.
 - SQL Server migration artifacts are not used as MySQL production migrations.
-- A clean MySQL database can be initialized from the regenerated migration.
+- If a configured disposable MySQL-compatible validation target is present, external migration validation passes.
+- If no configured disposable MySQL-compatible validation target is present, external migration validation is recorded as skipped.
+- The migration artifacts remain ready for mandatory Azure startup verification.
 
 **Validation tests**:
 
 - Package restore and application build.
 - Provider compatibility check against .NET 10/EF Core 10.
-- Clean database migration test and safe rerun test.
+- When a configured disposable MySQL-compatible validation target is present, run external initialization, upgrade, and repeatability checks; otherwise record the external-validation skip and continue with mandatory Azure startup migration, readiness, and smoke-test verification.
 - Configuration test proving local settings and production settings are separate.
 
-**Rollback procedure**: Revert provider/configuration changes on the feature branch before merge; preserve the current SQL Server branch state until MySQL validation passes. Do not apply unvalidated migrations to production.
+**Rollback procedure**: Revert provider/configuration changes on the feature branch before merge; preserve validation evidence or the configured disposable MySQL-compatible validation target, when present. Do not apply unvalidated migrations to production; Azure startup migration remains the production migration path.
 
 ### Phase 2 - Identity persistence validation
 
@@ -272,12 +291,14 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 
 **Entry criteria**:
 
-- Phase 1 provider and clean migration gate passes.
+- Phase 1 produced either a successful configured-target validation result or a recorded external-validation skip.
 - ApplicationUser model and Identity configuration are identified.
 
 **Exit criteria**:
 
-- Identity schema initializes in MySQL.
+- If the configured disposable MySQL-compatible validation target is present, the Identity and application schemas initialize successfully in that target.
+- If the configured disposable MySQL-compatible validation target is absent, the external check remains recorded as skipped.
+- In all cases, final Identity schema evidence must come from mandatory Azure startup migration, readiness, and smoke verification before release completion.
 - Registration, login, logout, unique email, and password validation tests pass.
 - No email delivery or password reset dependency is introduced.
 
@@ -289,7 +310,7 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 - Logout access-denial test.
 - Identity record persistence after process restart.
 
-**Rollback procedure**: Revert Identity configuration changes before deploying; retain the disposable database for diagnosis. Do not delete a production account database to recover from an application test failure.
+**Rollback procedure**: Revert Identity configuration changes before deploying; retain the configured disposable MySQL-compatible validation target, when present, for diagnosis. Do not delete a production account database to recover from an application test failure.
 
 ### Phase 3 - Data model validation
 
@@ -304,7 +325,7 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 
 - Every user-owned record has one owner.
 - Cross-user read/update/delete attempts fail safely.
-- Save and retrieval survive restart in the isolated database.
+- Persistence evidence comes from the configured disposable MySQL-compatible validation target, when present; mandatory Azure startup migration, restart/redeployment verification, readiness, and smoke testing provide production behavior evidence.
 - Migration schema contains required keys, constraints, and indexes.
 
 **Validation tests**:
@@ -323,25 +344,25 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 
 **Entry criteria**:
 
-- Phases 1–3 pass locally and against isolated database infrastructure.
+- Phases 1–3 pass locally; the configured disposable MySQL-compatible validation target passes when present, or validation is recorded as skipped when no target exists. Azure startup migration, readiness, and smoke verification remain mandatory.
 - Azure secret/configuration names and permissions are documented.
 
 **Exit criteria**:
 
 - Full test suite runs before deployment.
-- A dedicated migration-validation step runs before publish and deployment.
-- The validation step checks migration artifacts against an isolated MySQL-compatible database when available.
+- A dedicated migration-validation step runs before publish and deployment when a disposable validation target is configured; otherwise the workflow records a skipped validation.
+- The validation step checks migration artifacts against the configured disposable MySQL-compatible validation target when present; otherwise it records the external validation as skipped without blocking deployment.
 - The validation step does not connect to or alter production MySQL In-App.
 - Production migrations execute during application startup after deployment.
 - Startup migration success is confirmed through readiness and required smoke verification.
-- CI migration-validation failure blocks publishing and deployment; startup-migration failure prevents readiness and is reported by the required smoke test.
+- If a configured disposable validation target exists and validation fails, publishing and deployment are blocked; if no target exists, deployment may continue. Startup-migration failure prevents readiness and is reported by the required smoke test.
 - Logs are safe and workflow targets the intended App Service.
 
 **Validation tests**:
 
 - Passing workflow path through a controlled release candidate.
 - Deliberately failing test blocks deployment.
-- Deliberately invalid migration validation blocks publishing and deployment; after deployment, startup configuration, credential, connectivity, or migration failure prevents readiness and fails the required smoke verification, which makes the workflow unsuccessful.
+- Deliberately invalid migration validation blocks publishing and deployment when a configured disposable MySQL-compatible validation target is present; with no configured disposable MySQL-compatible validation target, the validation is recorded as skipped. After deployment, startup configuration, credential, connectivity, or migration failure prevents readiness and fails the required smoke verification, which makes the workflow unsuccessful.
 - Secret redaction review and artifact inspection.
 
 **Rollback procedure**: Revert workflow changes to the last known-good workflow if the release path is blocked; do not bypass failed tests or migration checks to deploy.
@@ -361,7 +382,7 @@ Any failure through migration validation must prevent publishing/deployment. Sta
 - Production starts without provider/configuration errors.
 - Registration, login, logout, save, retrieval, and cross-user denial pass in smoke verification.
 - Data survives a controlled restart and subsequent redeployment.
-- Workflow records successful migration validation, deployment, startup/readiness, and smoke results.
+- Workflow records deployment, mandatory startup migration/readiness, and smoke results; it records successful validation against the configured disposable MySQL-compatible validation target when present or a skipped validation when no configured disposable MySQL-compatible validation target is present.
 - Known MySQL In-App limitations are documented for the MVP.
 
 **Validation tests**:
@@ -422,15 +443,15 @@ These generated SQL Server artifacts must not be used as the MySQL migration set
 ### New files requiring creation
 
 ```text
-Touching_Grass/Data/Migrations/<MySqlInitialMigration>.cs
-Touching_Grass/Data/Migrations/<MySqlInitialMigration>.Designer.cs
+Touching_Grass/Data/Migrations/20261122045502_MySqlInitial.cs
+Touching_Grass/Data/Migrations/20261122045502_MySqlInitial.Designer.cs
 Touching_Grass/Data/Migrations/ApplicationDbContextModelSnapshot.cs  # regenerated for MySQL
-tests/Touching_Grass.UnitTests/<IdentityPersistenceTests>.cs
-tests/Touching_Grass.UnitTests/<UserOwnershipTests>.cs
-tests/Touching_Grass.UnitTests/<MigrationAndPersistenceFixture>.cs
+tests/Touching_Grass.UnitTests/[IMPLEMENTATION NAME TO BE CREATED: AzureIdentityPersistenceTests.cs]
+tests/Touching_Grass.UnitTests/[IMPLEMENTATION NAME TO BE CREATED: AzureUserOwnershipTests.cs]
+tests/Touching_Grass.UnitTests/MigrationValidationTests.cs
 ```
 
-The exact test and migration filenames are implementation details to be finalized during task generation; this plan does not create tasks or implementation code.
+The named migration artifacts are the approved current MySQL migration set. Bracketed test names identify planned files that still need to be created during implementation; they are not unresolved placeholders.
 
 ### Configuration and workflow files requiring updates
 
@@ -446,7 +467,7 @@ Production secret values belong in Azure App Service configuration or protected 
 
 - Confirm the Azure App Service's exact site and slot names.
 - Confirm Azure MySQL In-App is enabled and reachable by the App Service.
-- Create/configure the protected logical `DefaultConnection` setting.
+- Create/configure the protected Azure App Service `MYSQLCONNSTR_localdb` connection-string setting.
 - Confirm the GitHub Actions identity has only the Azure permissions required to deploy the application and perform approved deployment verification.
 - Confirm the GitHub-hosted runner does not require direct access to production MySQL In-App.
 - Confirm the App Service application accesses MySQL In-App at runtime through its protected App Service database configuration.
@@ -471,7 +492,7 @@ Production secret values belong in Azure App Service configuration or protected 
 - All pre-design gates remain satisfied.
 - MySQL provider and migration compatibility are an explicit Phase 1 exit criterion.
 - Production secrets remain outside source control and are verified by negative artifact/log checks.
-- CI migration-validation failure blocks publishing and deployment; production startup-migration failure occurs after deployment and prevents readiness; required smoke-test failure makes the GitHub Actions workflow unsuccessful.
+- A configured disposable validation-target failure blocks publishing and deployment; when no target is configured, validation is recorded as skipped. Production startup-migration failure occurs after deployment and prevents readiness; required smoke-test failure makes the GitHub Actions workflow unsuccessful.
 - No unjustified constitution violation requires complexity tracking.
 
 ## Complexity Tracking

@@ -15,6 +15,7 @@ public sealed class UserPlantService : IUserPlantService
 
     public async Task<IReadOnlyList<UserPlant>> ListAsync(string userId, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         return await _db.UserPlants
             .AsNoTracking()
             .Where(plant => plant.UserId == userId)
@@ -26,6 +27,7 @@ public sealed class UserPlantService : IUserPlantService
 
     public Task<UserPlant?> FindAsync(string userId, int id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         return _db.UserPlants
             .AsNoTracking()
             .SingleOrDefaultAsync(plant => plant.UserId == userId && plant.Id == id, cancellationToken);
@@ -36,6 +38,7 @@ public sealed class UserPlantService : IUserPlantService
         Plant plant,
         CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         var now = DateTime.UtcNow;
         var savedPlant = await _db.UserPlants
             .SingleOrDefaultAsync(
@@ -68,6 +71,7 @@ public sealed class UserPlantService : IUserPlantService
 
     public async Task<bool> ToggleFavoriteAsync(string userId, int id, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         var savedPlant = await _db.UserPlants
             .SingleOrDefaultAsync(plant => plant.UserId == userId && plant.Id == id, cancellationToken);
         if (savedPlant is null)

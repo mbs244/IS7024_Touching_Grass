@@ -157,3 +157,33 @@ During each meeting, we will:
   - Update GitHub
   - Discuss our progress and issues
   - Plan for next week
+
+## Azure persistence and local setup
+
+The application uses Oracle `MySql.EntityFrameworkCore` 10.0.12 with EF Core 10.0.x. The
+active migrations under `Touching_Grass/Data/Migrations` are generated for MySQL. The former
+SQL Server migrations are retained under `Touching_Grass/Data/Migrations.SqlServerArchive` for
+history only and are excluded from runtime compilation.
+
+Set `ConnectionStrings:DefaultConnection` through user secrets or an environment variable for
+local development. For example:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost;Port=3306;Database=plantwise_dev;User ID=plantwise;Password=<local-only-password>"
+```
+
+Azure App Service `PlantwiseWaterTracking` must provide the same logical setting through a
+protected application setting or connection-string setting. Production values must never be
+committed to JSON, workflow files, logs, or published artifacts. Startup validates the setting,
+applies pending EF migrations, and only then exposes `/health`; it never uses LocalDB,
+`EnsureCreated`, or automatic production rollback. The MVP assumes one active App Service
+instance because startup migration coordination must be revisited before scale-out.
+
+GitHub Actions validates migrations only against a disposable database when
+`MYSQL_VALIDATION_CONNECTION_STRING` is supplied. It never applies migrations to production.
+After deployment, the required smoke test uses protected `SMOKE_TEST_*` settings and fails the
+workflow when readiness or the authenticated persistence flow cannot be verified.
+
+ZIP validation accepts five-digit United States ZIP codes present in the bundled national ZIP
+dataset; it is not restricted to California. The plant recommendation dataset remains the
+existing WUCOLS source, which is documented as California-specific.

@@ -10,17 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 if (string.IsNullOrWhiteSpace(connectionString))
 {
-    connectionString = builder.Configuration["AZURE_SQL_CONNECTIONSTRING"];
-}
-
-if (string.IsNullOrWhiteSpace(connectionString))
-{
     throw new InvalidOperationException(
-        "A database connection string is required. Configure ConnectionStrings:DefaultConnection or AZURE_SQL_CONNECTIONSTRING.");
+        "A database connection string is required. Configure ConnectionStrings:DefaultConnection.");
 }
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseMySQL(connectionString));
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
         options.SignIn.RequireConfirmedAccount = false;
@@ -32,8 +27,19 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
         options.Password.RequireNonAlphanumeric = false;
         options.User.RequireUniqueEmail = true;
     })
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+    options.Cookie.HttpOnly = true;
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/Login";
+});
 builder.Services.AddRazorPages();
+builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
 builder.Services.AddSingleton<JsonDataLoader>();
 builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
 builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
@@ -41,6 +47,8 @@ builder.Services.AddSingleton<IWateringCalculatorService, WateringCalculatorServ
 builder.Services.AddScoped<IUserPlantService, UserPlantService>();
 
 var app = builder.Build();
+
+await ApplyPendingMigrationsAsync(app);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -60,5 +68,25 @@ app.UseAuthorization();
 app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
+app.MapHealthChecks("/health");
 
 app.Run();
+
+static async Task ApplyPendingMigrationsAsync(WebApplication app)
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+        .CreateLogger("StartupDatabaseMigration");
+
+    try
+    {
+        await db.Database.MigrateAsync();
+        logger.LogInformation("Startup database migration completed successfully.");
+    }
+    catch (Exception)
+    {
+        logger.LogCritical("Startup database migration failed; application readiness is blocked.");
+        throw new InvalidOperationException("The application database is unavailable.");
+    }
+}

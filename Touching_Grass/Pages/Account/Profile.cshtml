@@ -4,4 +4,12 @@
 @{ ViewData["Title"] = "Profile"; }
 <h1>Profile</h1>
 @if (ViewData["Success"] is string success) { <div class="alert alert-success">@success</div> }
-<form method="post"><div asp-validation-summary="ModelOnly" class="text-danger"></div><label asp-for="DefaultZipCode"></label><input asp-for="DefaultZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" /><span asp-validation-for="DefaultZipCode" class="text-danger"></span><button class="btn btn-primary mt-3">Save</button></form>
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    <label asp-for="DefaultZipCode"></label>
+    <input asp-for="DefaultZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" aria-describedby="zip-help" />
+    <div id="zip-help" class="form-text">Enter a supported five-digit USA ZIP code.</div>
+    <span asp-validation-for="DefaultZipCode" class="text-danger"></span>
+    <button type="submit" class="btn btn-primary mt-3">Save</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

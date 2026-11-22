@@ -23,8 +23,32 @@ jobs:
         with:
           dotnet-version: '10.x'
 
+      - name: Restore dependencies
+        run: dotnet restore Touching_Grass.slnx
+
+      - name: Install EF Core tools
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build Touching_Grass.slnx --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test Touching_Grass.slnx --configuration Release --no-build --no-restore
+
+      - name: Validate MySQL migrations
+        shell: pwsh
+        env:
+          MYSQL_VALIDATION_CONNECTION_STRING: ${{ secrets.MYSQL_VALIDATION_CONNECTION_STRING }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:MYSQL_VALIDATION_CONNECTION_STRING)) {
+            Write-Host 'No disposable MySQL validation database configured; validating migration generation only.'
+            dotnet ef migrations script --idempotent --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj --output "$env:RUNNER_TEMP/mysql-migrations.sql"
+          } else {
+            Write-Host 'Applying migrations only to the configured disposable validation database.'
+            $env:ConnectionStrings__DefaultConnection = $env:MYSQL_VALIDATION_CONNECTION_STRING
+            dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
+            dotnet ef database update --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
+          }
 
       - name: dotnet publish
         run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
@@ -62,4 +86,13 @@ jobs:
           app-name: 'PlantwiseWaterTracking'
           slot-name: 'Production'
           package: .
+
+      - name: Required post-deployment smoke test
+        shell: pwsh
+        env:
+          SMOKE_TEST_URL: ${{ secrets.SMOKE_TEST_URL }}
+          SMOKE_TEST_EMAIL: ${{ secrets.SMOKE_TEST_EMAIL }}
+          SMOKE_TEST_PASSWORD: ${{ secrets.SMOKE_TEST_PASSWORD }}
+          SMOKE_TEST_ZIP: ${{ secrets.SMOKE_TEST_ZIP }}
+        run: ./scripts/smoke-test.ps1
           
