@@ -10,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 var isDevelopment = builder.Environment.IsDevelopment();
 if (isDevelopment)
 {
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("Touching_Grass.Development.Identity"));
+    builder.Services.AddDefaultIdentity<ApplicationUser>(ConfigureIdentity)
+        .AddEntityFrameworkStores<ApplicationDbContext>()
+        .AddDefaultTokenProviders();
     builder.Services.AddSingleton<LocalUserPlantService>();
     builder.Services.AddSingleton<IUserPlantService>(services =>
         services.GetRequiredService<LocalUserPlantService>());
@@ -66,12 +71,8 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-
-if (!isDevelopment)
-{
-    app.UseAuthentication();
-    app.UseAuthorization();
-}
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapRazorPages()
@@ -113,3 +114,5 @@ static void ConfigureIdentity(IdentityOptions options)
     options.Password.RequireNonAlphanumeric = false;
     options.User.RequireUniqueEmail = true;
 }
+
+public partial class Program;

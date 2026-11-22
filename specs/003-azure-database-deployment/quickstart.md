@@ -5,23 +5,23 @@ This document describes how the implementation and verification should be perfor
 ## Local Development Prerequisites
 
 - .NET 10 SDK and the repository's existing solution.
-- A disposable MySQL-compatible development database or approved local MySQL environment; do not use the Azure production database for local development.
-- Oracle `MySql.EntityFrameworkCore` 10.0.12 with the compatible EF Core 10.0.x package family validated for the application.
-- A local connection string supplied through user secrets or an environment-specific configuration source.
-- An isolated test database for persistence and migration tests.
+- No MySQL, SQLite, SQL Server, Docker, relational database, or connection string is required.
+- Development Identity uses an EF Core InMemory store named `Touching_Grass.Development.Identity`.
+- Development accounts and Identity state are process-local and may be lost when the application restarts.
+- Oracle `MySql.EntityFrameworkCore` 10.0.12 is used only by Azure Persistence Mode.
 
 ## Configuration Contract
 
-- Local development uses a non-production connection setting named `ConnectionStrings:DefaultConnection`.
-- Azure App Service supplies the production value through protected application configuration or connection-string settings.
-- The application must resolve the same logical configuration name in both environments.
+- Local Development does not read or require `MYSQLCONNSTR_localdb` or any connection string.
+- Azure App Service supplies `MYSQLCONNSTR_localdb` through protected application configuration or connection-string settings.
+- Azure startup fails safely when `MYSQLCONNSTR_localdb` is absent or invalid; it never falls back to the Development InMemory store.
 - Production configuration must not be copied into `appsettings.json`, committed to GitHub, printed in logs, or embedded in published artifacts.
 - Azure configuration must identify the MySQL In-App database and use the platform's required secure connection options.
 
 ## Implementation Validation Sequence
 
 1. Confirm the selected MySQL In-App connection format and network availability from the deployed App Service.
-2. Replace the SQL Server EF Core provider only after confirming Oracle provider compatibility with .NET 10/EF Core 10.
+2. Confirm Oracle provider compatibility with .NET 10/EF Core 10 for Azure Persistence Mode.
 3. Regenerate the migration model for MySQL from the validated ApplicationDbContext.
 4. Apply the migration to a clean disposable database.
 5. Apply the same migration operation a second time and confirm it is a safe no-op.
