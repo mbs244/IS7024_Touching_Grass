@@ -33,4 +33,10 @@ public sealed class PlantRepository : IPlantRepository
             _ => PlantMatch.Ambiguous()
         };
     }
+
+    public async Task<Plant?> FindByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var plants = await _dataLoader.LoadAsync<Plant>("plants.json", cancellationToken);
+        return plants.SingleOrDefault(plant => plant.Id == id);
+    }
 }
