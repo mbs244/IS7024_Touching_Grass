@@ -12,6 +12,7 @@ namespace Touching_Grass.Services;
 public sealed class LocalUserPlantService : IUserPlantService
 {
     private readonly ConcurrentDictionary<string, ConcurrentDictionary<int, UserPlant>> _plantsByUser = new();
+    private readonly ConcurrentDictionary<string, object> _userLocks = new();
     private int _nextId;
 
     public Task<IReadOnlyList<UserPlant>> ListAsync(
@@ -21,18 +22,22 @@ public sealed class LocalUserPlantService : IUserPlantService
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!_plantsByUser.TryGetValue(userId, out var plants))
+        var userLock = GetUserLock(userId);
+        lock (userLock)
         {
-            return Task.FromResult<IReadOnlyList<UserPlant>>([]);
-        }
+            if (!_plantsByUser.TryGetValue(userId, out var plants))
+            {
+                return Task.FromResult<IReadOnlyList<UserPlant>>([]);
+            }
 
-        var result = plants.Values
-            .OrderByDescending(plant => plant.IsFavorite)
-            .ThenBy(plant => plant.CommonNameSnapshot)
-            .ThenBy(plant => plant.Id)
-            .Select(Clone)
-            .ToArray();
-        return Task.FromResult<IReadOnlyList<UserPlant>>(result);
+            var result = plants.Values
+                .OrderByDescending(plant => plant.IsFavorite)
+                .ThenBy(plant => plant.CommonNameSnapshot)
+                .ThenBy(plant => plant.Id)
+                .Select(Clone)
+                .ToArray();
+            return Task.FromResult<IReadOnlyList<UserPlant>>(result);
+        }
     }
 
     public Task<UserPlant?> FindAsync(
@@ -43,10 +48,14 @@ public sealed class LocalUserPlantService : IUserPlantService
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var found = _plantsByUser.TryGetValue(userId, out var plants) && plants.TryGetValue(id, out var plant)
-            ? Clone(plant)
-            : null;
-        return Task.FromResult(found);
+        var userLock = GetUserLock(userId);
+        lock (userLock)
+        {
+            var found = _plantsByUser.TryGetValue(userId, out var plants) && plants.TryGetValue(id, out var plant)
+                ? Clone(plant)
+                : null;
+            return Task.FromResult(found);
+        }
     }
 
     public Task<UserPlant> UpsertAfterRecommendationAsync(
@@ -58,31 +67,35 @@ public sealed class LocalUserPlantService : IUserPlantService
         ArgumentNullException.ThrowIfNull(plant);
         cancellationToken.ThrowIfCancellationRequested();
 
-        var userPlants = _plantsByUser.GetOrAdd(userId, _ => new ConcurrentDictionary<int, UserPlant>());
-        var now = DateTime.UtcNow;
-        var savedPlant = userPlants.Values.FirstOrDefault(entry => entry.SourcePlantId == plant.Id);
-        if (savedPlant is null)
+        var userLock = GetUserLock(userId);
+        lock (userLock)
         {
-            savedPlant = new UserPlant
+            var userPlants = _plantsByUser.GetOrAdd(userId, _ => new ConcurrentDictionary<int, UserPlant>());
+            var now = DateTime.UtcNow;
+            var savedPlant = userPlants.Values.FirstOrDefault(entry => entry.SourcePlantId == plant.Id);
+            if (savedPlant is null)
             {
-                Id = Interlocked.Increment(ref _nextId),
-                UserId = userId,
-                SourcePlantId = plant.Id,
-                CommonNameSnapshot = plant.CommonName,
-                ScientificNameSnapshot = plant.ScientificName,
-                CreatedAt = now,
-                LastSearchedAt = now
-            };
-            userPlants[savedPlant.Id] = savedPlant;
-        }
-        else
-        {
-            savedPlant.CommonNameSnapshot = plant.CommonName;
-            savedPlant.ScientificNameSnapshot = plant.ScientificName;
-            savedPlant.LastSearchedAt = now;
-        }
+                savedPlant = new UserPlant
+                {
+                    Id = Interlocked.Increment(ref _nextId),
+                    UserId = userId,
+                    SourcePlantId = plant.Id,
+                    CommonNameSnapshot = plant.CommonName,
+                    ScientificNameSnapshot = plant.ScientificName,
+                    CreatedAt = now,
+                    LastSearchedAt = now
+                };
+                userPlants[savedPlant.Id] = savedPlant;
+            }
+            else
+            {
+                savedPlant.CommonNameSnapshot = plant.CommonName;
+                savedPlant.ScientificNameSnapshot = plant.ScientificName;
+                savedPlant.LastSearchedAt = now;
+            }
 
-        return Task.FromResult(Clone(savedPlant));
+            return Task.FromResult(Clone(savedPlant));
+        }
     }
 
     public Task<bool> ToggleFavoriteAsync(
@@ -93,14 +106,21 @@ public sealed class LocalUserPlantService : IUserPlantService
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (!_plantsByUser.TryGetValue(userId, out var plants) || !plants.TryGetValue(id, out var plant))
+        var userLock = GetUserLock(userId);
+        lock (userLock)
         {
-            return Task.FromResult(false);
-        }
+            if (!_plantsByUser.TryGetValue(userId, out var plants) || !plants.TryGetValue(id, out var plant))
+            {
+                return Task.FromResult(false);
+            }
 
-        plant.IsFavorite = !plant.IsFavorite;
-        return Task.FromResult(true);
+            plant.IsFavorite = !plant.IsFavorite;
+            return Task.FromResult(true);
+        }
     }
+
+    private object GetUserLock(string userId) =>
+        _userLocks.GetOrAdd(userId, _ => new object());
 
     private static UserPlant Clone(UserPlant plant) => new()
     {

@@ -39,6 +39,7 @@ This document describes how the implementation and verification should be perfor
 - Log in with valid credentials and reject invalid credentials.
 - Log out and verify protected pages cannot be accessed.
 - Save the approved MVP profile and plant/favorite data.
+- In Development Mode, run repeated concurrent same-user local in-memory operations and verify: upserts do not create duplicates per source plant, favorite toggles follow parity, and read snapshots remain consistent under mutation.
 - Verify a second user cannot read, change, or delete the first user's records.
 - Restart the application and retrieve the original records.
 - Redeploy a later artifact and retrieve the original records.

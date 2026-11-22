@@ -215,13 +215,70 @@
   - Representative Azure performance measurements use at least 10 post-warm-up runs per operation and the defined threshold.
   - Evidence is sanitized and does not contain secrets, raw connection strings, SQL, stack traces, or personal data.
 
+## Phase 5: LocalUserPlantService Concurrency Safety (High Priority Addendum)
+
+**Purpose**: Eliminate high-severity race conditions in Development-mode in-memory user-plant operations while preserving per-user consistency.
+
+### T018 - Define and document the per-user synchronization strategy for local user-plant operations
+
+- **Files affected**: `specs/003-azure-database-deployment/plan.md`, `specs/003-azure-database-deployment/tasks.md`
+- **Dependencies**: T003
+- **Traceability**: [FR-044] [AC-013]
+- **Acceptance criteria**:
+  - The concurrency issue and root cause are documented as compound-operation races not solved by `ConcurrentDictionary` alone.
+  - The design requires one shared per-user lock boundary for upsert, toggle, and read/clone operations.
+  - The strategy explicitly preserves concurrency across different users.
+
+### T019 - Apply per-user locking across upsert, toggle, and read/clone paths in local service
+
+- **Files affected**: `Touching_Grass/Services/LocalUserPlantService.cs`
+- **Dependencies**: T018
+- **Traceability**: [FR-044] [AC-013]
+- **Acceptance criteria**:
+  - `UpsertAfterRecommendationAsync` executes lookup + insert/update atomically per user.
+  - `ToggleFavoriteAsync` executes read-modify-write atomically per user.
+  - `ListAsync` and `FindAsync` clone from a consistent per-user view.
+  - No global lock is introduced.
+
+### T020 - Add concurrency-focused unit tests for duplicate-prevention and toggle consistency
+
+- **Files affected**: `tests/Touching_Grass.UnitTests/LocalUserPlantServiceConcurrencyTests.cs [NEW]`
+- **Dependencies**: T019
+- **Traceability**: [FR-044] [AC-013]
+- **Acceptance criteria**:
+  - Repeated concurrent upserts for the same user/source plant do not create duplicates.
+	- For a known number of concurrent toggle operations, final favorite state matches toggle parity (even toggles preserve initial state; odd toggles invert it).
+  - Concurrent toggle operations complete without corrupted state or runtime concurrency exceptions.
+  - Assertions target invariants and avoid timing-fragile assumptions.
+
+### T021 - Add concurrency-focused unit tests for consistent read/clone behavior under mutation
+
+- **Files affected**: `tests/Touching_Grass.UnitTests/LocalUserPlantServiceConcurrencyTests.cs`
+- **Dependencies**: T019
+- **Traceability**: [FR-044] [AC-013]
+- **Acceptance criteria**:
+  - Concurrent read operations (`ListAsync`, `FindAsync`) under mutation return consistent snapshots.
+  - Returned objects are clones and external mutations do not alter stored records.
+
+### T022 - Record local concurrency verification guidance and evidence expectations
+
+- **Files affected**: `specs/003-azure-database-deployment/quickstart.md`, `README.md`
+- **Dependencies**: T020, T021
+- **Traceability**: [FR-044] [AC-013]
+- **Acceptance criteria**:
+  - Documentation states the local in-memory service is concurrency-safe per user for upsert, toggle, and read/clone operations.
+  - Verification guidance includes repeated concurrent test execution and expected invariants.
+  - Guidance clarifies that this addendum affects local/dev in-memory behavior only.
+
 ## Dependencies and Execution Order
 
 - Phase 1 establishes the database-free local mode and must complete before persistence work.
 - Phase 2 establishes Azure-only Identity and ownership behavior.
 - Phase 3 generates and validates the Azure-only migration lifecycle; local migration execution remains prohibited.
 - Phase 4 gates and verifies the Azure deployment.
+- Phase 5 addresses local in-memory concurrency safety and can run after T003 in parallel with Azure-focused phases.
 - T004 validates local mode independently of all Azure infrastructure.
+- T019 is the implementation gate for the local concurrency addendum; T020 and T021 are required before T022 documentation closure.
 - T012 validates against the configured disposable MySQL-compatible validation target, when present; T015 and T017 always validate Azure mode against deployed infrastructure, including startup migration, readiness, and smoke behavior.
 
 ## Independent Validation Criteria
@@ -234,7 +291,8 @@
 - **Release gating**: T013 blocks deployment when a configured disposable MySQL-compatible validation target fails and records a skip when no such target is present; T015 always proves Azure startup/readiness/smoke failure causes the workflow to fail.
 - **Durability**: T016 proves Azure persistence across restart and redeployment.
 - **Quality**: T017 proves Azure negative behavior, accessibility, performance, and evidence handling.
+- **Local concurrency safety**: T019–T021 prove duplicate prevention, toggle consistency, and read/clone snapshot consistency under concurrent local requests.
 
 ## Scope Boundary
 
-The feature does not add local authentication persistence, local user-data persistence, any local relational database provider, a dual-provider local strategy, email verification, password reset, social login, MFA, roles, calculation history, or production migration execution from the GitHub Actions runner.
+The feature does not add local authentication persistence, local user-data persistence, any local relational database provider, a dual-provider local strategy, email verification, password reset, social login, MFA, roles, calculation history, or production migration execution from the GitHub Actions runner. The concurrency addendum does not introduce global locking or alter Azure production persistence behavior.

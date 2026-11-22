@@ -498,3 +498,52 @@ Production secret values belong in Azure App Service configuration or protected 
 ## Complexity Tracking
 
 No constitution violations are identified. The dedicated migration-validation stage and application-startup production migration, integration test fixture, and post-deployment smoke verification are required by the approved persistence and release guarantees rather than optional architectural complexity. The CI stage performs validation only.
+
+## High-Priority Addendum: LocalUserPlantService Concurrency Safety
+
+### Context and Priority
+
+Code review identified a high-severity correctness issue in `Touching_Grass/Services/LocalUserPlantService.cs`:
+
+- Concurrent upsert requests can both pass the same lookup and insert duplicate records for the same source plant.
+- Shared mutable `UserPlant` values can lose updates during concurrent favorite toggles.
+- Read and clone operations can observe non-atomic interleavings while writes are in progress.
+
+`ConcurrentDictionary` guarantees individual dictionary operation safety, but not end-to-end atomicity across compound operations.
+
+### Scope
+
+This addendum applies to Development-mode in-memory user plant operations only and does not alter production Azure persistence behavior.
+
+### Design Decision
+
+Use one consistent per-user synchronization boundary for all operations that access a user's saved plants:
+
+- `UpsertAfterRecommendationAsync`
+- `ToggleFavoriteAsync`
+- `ListAsync`
+- `FindAsync`
+
+The same per-user lock must guard lookup + insert/update, toggle read-modify-write, and read/cloning steps so each operation observes a consistent record state.
+
+### Required Outcomes
+
+- No duplicate per-user saved plants for the same `SourcePlantId` caused by concurrent upserts.
+- No lost-update behavior for concurrent favorite toggles.
+- Read operations return clones from a consistent in-operation view.
+
+### Test Requirements
+
+Add/extend unit tests in `tests/Touching_Grass.UnitTests` to validate concurrency behavior:
+
+1. Concurrent upserts for the same user/plant do not create duplicates.
+2. Concurrent toggles do not corrupt or lose state transitions unexpectedly.
+3. Reads (`ListAsync`, `FindAsync`) under concurrent mutation return consistent clone snapshots.
+
+Tests must assert invariants under repeated concurrent execution and avoid timing-fragile assumptions.
+
+### Constitution Alignment
+
+- **Code Quality and Clarity**: Improved by explicit synchronization semantics for compound operations.
+- **Testable Delivery**: Enforced through dedicated concurrency tests.
+- **Maintainable Simplicity**: Preserved by using a single per-user locking approach instead of ad hoc partial locking.

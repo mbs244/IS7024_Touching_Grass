@@ -148,6 +148,7 @@ As a maintainer, I want the deployment workflow to build and test the applicatio
 - A deployment is interrupted after the schema migration but before the application artifact is fully deployed.
 - A redeployment contains no data migration but changes the application model.
 - Concurrent requests from different users attempt to create or access records within the single active application instance; ownership and data isolation must remain intact.
+- Concurrent requests from the same authenticated user attempt to save, toggle favorite state, and read local in-memory records at the same time; operations must not create duplicates, lose updates, or return inconsistent snapshots.
 - A future scale-out configuration would introduce multiple App Service instances or overlapping startup migrations; this is deferred and requires architectural reevaluation before the instance count increases above one.
 - Local Development configuration is accidentally selected in Azure.
 - Azure storage or the database reaches its configured cost, capacity, or retention limits.
@@ -176,6 +177,7 @@ The authentication and user-data requirements in FR-001 through FR-015 are envir
 - **FR-013**: In Azure persistence mode, the system MUST preserve ownership when a user updates an existing record and MUST prevent a client request from changing record ownership.
 - **FR-014**: In Azure Mode, the system MUST persist valid user-owned data before reporting a successful save. Development Mode is not required to provide database-backed user-data persistence.
 - **FR-015**: In Azure Mode, the system MUST return a safe, actionable error when a persistence operation fails and MUST not discard existing data silently. Development Mode must preserve the existing JSON/in-memory behavior and is not required to provide persistent-storage failure handling.
+- **FR-044**: In Development Mode, local in-memory user-owned data operations MUST be concurrency-safe per user. For a given user, concurrent save/upsert, favorite-toggle, and read operations MUST execute with a consistent per-user synchronization boundary so the same source plant is not duplicated by races, favorite updates are not lost, and read results are returned as consistent snapshots.
 
 ### Database and Persistence Requirements
 
@@ -239,6 +241,7 @@ The authentication and user-data requirements in FR-001 through FR-015 are envir
 - **AC-010 Connection string configuration**: The deployed application starts and connects using protected Azure configuration; no production credential exists in tracked source files or published application files.
 - **AC-011 Unauthorized access protection**: Automated tests cover direct identifier manipulation, missing authentication, and cross-user requests, and all such attempts fail without exposing another user's data.
 - **AC-012 Failure behavior**: Removing or invalidating `MYSQLCONNSTR_localdb` causes a clear failed health/deployment signal and does not cause the application to use local JSON/in-memory mode or silently report successful persistence.
+- **AC-013 Local in-memory concurrency safety**: In Development Mode, repeated concurrent operations for the same user prove that (a) concurrent upserts for the same source plant produce at most one saved record for that user/source-plant pair, (b) concurrent favorite-toggle operations do not lose updates or corrupt state, and (c) reads return consistent cloned snapshots while concurrent mutations are in progress.
 
 ## Given / When / Then Verification Scenarios
 
@@ -325,6 +328,7 @@ The feature is ready for implementation review only when all of the following ev
 11. A negative Azure configuration test proves that a missing or invalid `MYSQLCONNSTR_localdb` does not report readiness or select local JSON/in-memory mode.
 12. A production smoke test confirms the application starts at the intended `PlantwiseWaterTracking` App Service and completes registration, login, save, logout, login again, and retrieval.
 13. Security review evidence confirms no sensitive credential, connection string, password hash, token, SQL statement, or stack trace is exposed in user-facing responses or deployment logs.
+14. Local concurrency test evidence confirms same-user in-memory save/upsert, favorite-toggle, and read operations satisfy AC-013 under repeated concurrent execution.
 
 ## Non-Functional Requirements
 
