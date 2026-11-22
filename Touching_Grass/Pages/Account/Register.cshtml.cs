@@ -43,9 +43,23 @@ public sealed class RegisterModel : PageModel
     {
         Email = (Email ?? string.Empty).Trim();
         DefaultZipCode = (DefaultZipCode ?? string.Empty).Trim();
-        if (ModelState.IsValid && await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null)
+        if (ModelState.IsValid)
         {
-            ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
+            try
+            {
+                if (await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null)
+                {
+                    ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError(nameof(DefaultZipCode), "ZIP reference data is temporarily unavailable. Please try again.");
+            }
         }
 
         if (!ModelState.IsValid)

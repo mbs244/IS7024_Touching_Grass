@@ -47,9 +47,22 @@ public sealed class DetailsModel : PageModel
             return NotFound();
         }
 
-        var plant = await _repository.FindByIdAsync(
-            SavedPlant.SourcePlantId,
-            cancellationToken);
+        Plant? plant;
+        try
+        {
+            plant = await _repository.FindByIdAsync(
+                SavedPlant.SourcePlantId,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Plant reference data is temporarily unavailable. Please try again.";
+            return Page();
+        }
 
         if (plant is null)
         {
@@ -58,7 +71,25 @@ public sealed class DetailsModel : PageModel
         }
 
         var user = await _users.GetUserAsync(User);
-        var location = await _zips.FindAsync(user!.DefaultZipCode, cancellationToken);
+        if (user is null)
+        {
+            return Challenge();
+        }
+
+        ZipLocation? location;
+        try
+        {
+            location = await _zips.FindAsync(user.DefaultZipCode, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "ZIP reference data is temporarily unavailable. Please try again.";
+            return Page();
+        }
 
         if (location is null)
         {

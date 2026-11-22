@@ -21,7 +21,24 @@ public sealed class ProfileModel : PageModel
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return Challenge();
         DefaultZipCode = DefaultZipCode.Trim();
-        if (ModelState.IsValid && await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null) ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
+        if (ModelState.IsValid)
+        {
+            try
+            {
+                if (await _zipLookupService.FindAsync(DefaultZipCode, cancellationToken) is null)
+                {
+                    ModelState.AddModelError(nameof(DefaultZipCode), "That ZIP code is not supported.");
+                }
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError(nameof(DefaultZipCode), "ZIP reference data is temporarily unavailable. Please try again.");
+            }
+        }
         if (!ModelState.IsValid) { DefaultZipCode = user.DefaultZipCode; return Page(); }
         user.DefaultZipCode = DefaultZipCode;
         var updateResult = await _userManager.UpdateAsync(user);
