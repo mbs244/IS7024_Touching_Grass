@@ -72,15 +72,11 @@ public sealed class UserPlantService : IUserPlantService
     public async Task<bool> ToggleFavoriteAsync(string userId, int id, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
-        var savedPlant = await _db.UserPlants
-            .SingleOrDefaultAsync(plant => plant.UserId == userId && plant.Id == id, cancellationToken);
-        if (savedPlant is null)
-        {
-            return false;
-        }
-
-        savedPlant.IsFavorite = !savedPlant.IsFavorite;
-        await _db.SaveChangesAsync(cancellationToken);
-        return true;
+        var updated = await _db.UserPlants
+            .Where(plant => plant.UserId == userId && plant.Id == id)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(plant => plant.IsFavorite, plant => !plant.IsFavorite),
+                cancellationToken);
+        return updated > 0;
     }
 }
