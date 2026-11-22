@@ -37,8 +37,8 @@ $register = Invoke-WebRequest -Uri "$BaseUrl/Account/Register" -Method Post -Web
 }
 if ($register.StatusCode -notin @(200, 302)) { throw 'Registration smoke test failed.' }
 
-$myPlants = Invoke-WebRequest -Uri "$BaseUrl/MyPlants" -WebSession $session -UseBasicParsing
-if ($myPlants.StatusCode -ne 200) { throw 'Authenticated protected-page smoke test failed.' }
+$myPlants = Invoke-WebRequest -Uri "$BaseUrl/MyPlants" -WebSession $session -UseBasicParsing -MaximumRedirection 0
+if ($myPlants.StatusCode -ne 200 -or $myPlants.Content -notmatch '<h1>My plants</h1>') { throw 'Authenticated protected-page smoke test failed.' }
 
 $logoutPage = Invoke-WebRequest -Uri "$BaseUrl/Account/Logout" -WebSession $session -UseBasicParsing
 $logoutToken = Get-AntiForgeryToken $logoutPage.Content
