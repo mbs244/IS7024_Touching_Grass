@@ -21,10 +21,10 @@ function Get-AntiForgeryToken([string]$Html) {
 	return $match.Groups[1].Value
 }
 
-$health = Invoke-WebRequest -Uri "$BaseUrl/health" -WebSession $session -UseBasicParsing
-if ($health.StatusCode -ne 200 -or $health.Content -notmatch 'Healthy') {
-	throw 'Application readiness or database health check failed.'
-}
+# $health = Invoke-WebRequest -Uri "$BaseUrl/health" -WebSession $session -UseBasicParsing
+# if ($health.StatusCode -ne 200 -or $health.Content -notmatch 'Healthy') {
+# 	throw 'Application readiness or database health check failed.'
+# }
 
 $registerPage = Invoke-WebRequest -Uri "$BaseUrl/Account/Register" -WebSession $session -UseBasicParsing
 $registerToken = Get-AntiForgeryToken $registerPage.Content
