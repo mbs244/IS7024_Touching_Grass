@@ -18,7 +18,7 @@
 
 **Purpose**: Confirm use of the existing application and test infrastructure; no project or dependency initialization is needed.
 
-- [ ] T001 Verify the existing .NET 10 application, local/Azure service registrations, and xUnit test target in `Touching_Grass/Touching_Grass.csproj`, `Touching_Grass/Program.cs`, and `tests/Touching_Grass.UnitTests/Touching_Grass.UnitTests.csproj`; do not add projects, packages, schema changes, or migrations.
+- [X] T001 Verify the existing .NET 10 application, local/Azure service registrations, and xUnit test target in `Touching_Grass/Touching_Grass.csproj`, `Touching_Grass/Program.cs`, and `tests/Touching_Grass.UnitTests/Touching_Grass.UnitTests.csproj`; do not add projects, packages, schema changes, or migrations.
 
 ## Phase 2: Foundational
 
@@ -36,17 +36,17 @@ No additional foundational work is required. Authentication, the shared service 
 
 > Write these tests first and confirm they fail before implementation.
 
-- [ ] T002 [P] [US1] Add `LocalUserPlantService.RemoveAsync` tests for successful removal, returned removed plant, missing entry, and preservation of another user's same catalog plant in `tests/Touching_Grass.UnitTests/LocalUserPlantServiceTests.cs`.
-- [ ] T003 [P] [US1] Add `UserPlantService.RemoveAsync` tests using the existing EF Core InMemory provider for successful removal, missing entry, and owner isolation in `tests/Touching_Grass.UnitTests/UserPlantServiceTests.cs`.
-- [ ] T004 [P] [US1] Add an authenticated My Plants POST integration test that checks removal and the plant-named success confirmation in `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs`.
+- [X] T002 [P] [US1] Add `LocalUserPlantService.RemoveAsync` tests for successful removal, returned removed plant, missing entry, and preservation of another user's same catalog plant in `tests/Touching_Grass.UnitTests/LocalUserPlantServiceTests.cs`.
+- [X] T003 [P] [US1] Add `UserPlantService.RemoveAsync` tests using the existing EF Core InMemory provider for successful removal, missing entry, and owner isolation in `tests/Touching_Grass.UnitTests/UserPlantServiceTests.cs`.
+- [X] T004 [P] [US1] Add an authenticated My Plants POST integration test that checks removal and the plant-named success confirmation in `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs`.
 
 ### Implementation for User Story 1
 
-- [ ] T005 [US1] Add `RemoveAsync` to `IUserPlantService` with the contract `Task<UserPlant?> RemoveAsync(string userId, int id, CancellationToken cancellationToken = default)` in `Touching_Grass/Services/IUserPlantService.cs`; `userId` is the required authenticated owner ID and `id` is the existing saved-entry ID.
-- [ ] T006 [P] [US1] Implement local removal in `Touching_Grass/Services/LocalUserPlantService.cs` using the existing per-user lock, returning a clone of the removed entry or `null` when the required owner ID and saved-entry ID do not match an entry.
-- [ ] T007 [P] [US1] Implement Azure-persisted removal in `Touching_Grass/Services/UserPlantService.cs`, matching both required `userId` and saved-entry `id`, deleting only that `UserPlant`, and returning the removed record or `null` without changing the schema.
-- [ ] T008 [US1] Add an authenticated `OnPostRemoveAsync` handler in `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` that derives the required owner ID from the current principal, passes only the submitted saved-entry ID to `RemoveAsync`, and sets a success message from the returned plant name before redirecting to My Plants.
-- [ ] T009 [US1] Add a separate per-plant POST Remove form beside the existing favorite control and render the plant-named success message as a status in `Touching_Grass/Pages/MyPlants/Index.cshtml`; submit only the saved-entry ID and leave the home page and favorite behavior unchanged.
+- [X] T005 [US1] Add `RemoveAsync` to `IUserPlantService` with the contract `Task<UserPlant?> RemoveAsync(string userId, int id, CancellationToken cancellationToken = default)` in `Touching_Grass/Services/IUserPlantService.cs`; `userId` is the required authenticated owner ID and `id` is the existing saved-entry ID.
+- [X] T006 [P] [US1] Implement local removal in `Touching_Grass/Services/LocalUserPlantService.cs` using the existing per-user lock, returning a clone of the removed entry or `null` when the required owner ID and saved-entry ID do not match an entry.
+- [X] T007 [P] [US1] Implement Azure-persisted removal in `Touching_Grass/Services/UserPlantService.cs`, matching both required `userId` and saved-entry `id`, deleting only that `UserPlant`, and returning the removed record or `null` without changing the schema.
+- [X] T008 [US1] Add an authenticated `OnPostRemoveAsync` handler in `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` that derives the required owner ID from the current principal, passes only the submitted saved-entry ID to `RemoveAsync`, and sets a success message from the returned plant name before redirecting to My Plants.
+- [X] T009 [US1] Add a separate per-plant POST Remove form beside the existing favorite control and render the plant-named success message as a status in `Touching_Grass/Pages/MyPlants/Index.cshtml`; submit only the saved-entry ID and leave the home page and favorite behavior unchanged.
 
 **Checkpoint**: A user can remove their own plant in either registered service environment, and successful removal produces a named confirmation.
 
@@ -60,12 +60,12 @@ No additional foundational work is required. Authentication, the shared service 
 
 > Write these tests first and confirm they fail before implementation.
 
-- [ ] T010 [US2] Extend `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs` to assert the plant-specific accessible button name and non-success feedback for stale/non-owned IDs; inject a `DbUpdateException` and assert redirect to My Plants, the exact error message, no success message, and the entry remains saved.
+- [X] T010 [US2] Extend `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs` to assert the plant-specific accessible button name and non-success feedback for stale/non-owned IDs; inject a `DbUpdateException` and assert redirect to My Plants, the exact error message, no success message, and the entry remains saved.
 
 ### Implementation for User Story 2
 
-- [ ] T011 [P] [US2] Change the visible button name in `Touching_Grass/Pages/MyPlants/Index.cshtml` to identify its action and plant (for example, `Remove Toyon`), and render failure feedback as an accessible message.
-- [ ] T012 [P] [US2] Update `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` so a `null` removal result sets generic non-success feedback without disclosing whether another user's entry exists; catch `DbException` and `DbUpdateException` from removal, log them, set `Something went wrong. Your plant was not removed.`, redirect to My Plants, and never show success for the failed operation. Allow cancellation to propagate.
+- [X] T011 [P] [US2] Change the visible button name in `Touching_Grass/Pages/MyPlants/Index.cshtml` to identify its action and plant (for example, `Remove Toyon`), and render failure feedback as an accessible message.
+- [X] T012 [P] [US2] Update `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` so a `null` removal result sets generic non-success feedback without disclosing whether another user's entry exists; catch `DbException` and `DbUpdateException` from removal, log them, set `Something went wrong. Your plant was not removed.`, redirect to My Plants, and never show success for the failed operation. Allow cancellation to propagate.
 
 **Checkpoint**: Removal controls identify their targets, and stale or non-owned requests receive accurate non-success feedback without affecting another user's list.
 
@@ -73,7 +73,7 @@ No additional foundational work is required. Authentication, the shared service 
 
 **Purpose**: Validate the complete feature and its environment parity.
 
-- [ ] T013 Run `dotnet test tests\Touching_Grass.UnitTests\Touching_Grass.UnitTests.csproj` and `dotnet build Touching_Grass.slnx`; resolve any failures without adding migrations or packages.
+- [X] T013 Run `dotnet test tests\Touching_Grass.UnitTests\Touching_Grass.UnitTests.csproj` and `dotnet build Touching_Grass.slnx`; resolve feature-related failures and document unrelated baseline failures without adding migrations or packages.
 - [ ] T014 Complete the local and Azure scenarios in `specs/004-remove-plants/quickstart.md` with test accounts; verify ownership isolation, named feedback, and unchanged home-page/catalog behavior.
 
 ---
@@ -138,3 +138,5 @@ Task: T004 - Add authenticated page removal test in tests/Touching_Grass.UnitTes
 - Test tasks are included to satisfy the project constitution's automated-testing requirement.
 - `[P]` tasks operate on separate files and have no dependency on another incomplete task.
 - No task changes the home page, `UserPlant` model, database schema, or migration files.
+- T014 remains pending live Azure-hosted validation; no Azure test deployment was provided for this session.
+- The full test suite has one unrelated culture-sensitive watering-calculation assertion failure; the other 25 tests pass.

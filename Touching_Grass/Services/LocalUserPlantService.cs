@@ -119,6 +119,27 @@ public sealed class LocalUserPlantService : IUserPlantService
         }
     }
 
+    public Task<UserPlant?> RemoveAsync(
+        string userId,
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var userLock = GetUserLock(userId);
+        lock (userLock)
+        {
+            if (!_plantsByUser.TryGetValue(userId, out var plants) ||
+                !plants.TryRemove(id, out var removedPlant))
+            {
+                return Task.FromResult<UserPlant?>(null);
+            }
+
+            return Task.FromResult<UserPlant?>(Clone(removedPlant));
+        }
+    }
+
     private object GetUserLock(string userId) =>
         _userLocks.GetOrAdd(userId, _ => new object());
 
