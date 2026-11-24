@@ -79,4 +79,24 @@ public sealed class UserPlantService : IUserPlantService
                 cancellationToken);
         return updated > 0;
     }
+
+    public async Task<UserPlant?> RemoveAsync(
+        string userId,
+        int id,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+        var savedPlant = await _db.UserPlants
+            .SingleOrDefaultAsync(
+                plant => plant.UserId == userId && plant.Id == id,
+                cancellationToken);
+        if (savedPlant is null)
+        {
+            return null;
+        }
+
+        _db.UserPlants.Remove(savedPlant);
+        await _db.SaveChangesAsync(cancellationToken);
+        return savedPlant;
+    }
 }

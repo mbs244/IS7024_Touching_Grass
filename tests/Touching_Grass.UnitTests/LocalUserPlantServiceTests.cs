@@ -39,4 +39,34 @@ public sealed class LocalUserPlantServiceTests
         var saved = Assert.Single(plants);
         Assert.Equal("Garden rose", saved.CommonNameSnapshot);
     }
+
+    [Fact]
+    public async Task RemoveAsync_RemovesAndReturnsOnlyTheOwnedEntry()
+    {
+        var service = new LocalUserPlantService();
+        var plant = new Plant { Id = 7, CommonName = "Toyon", ScientificName = "Heteromeles arbutifolia" };
+        var owned = await service.UpsertAfterRecommendationAsync("user-a", plant);
+        var otherUserPlant = await service.UpsertAfterRecommendationAsync("user-b", plant);
+
+        var removed = await service.RemoveAsync("user-a", owned.Id);
+
+        Assert.NotNull(removed);
+        Assert.Equal(owned.Id, removed.Id);
+        Assert.Equal("Toyon", removed.CommonNameSnapshot);
+        Assert.Empty(await service.ListAsync("user-a"));
+        Assert.Equal(otherUserPlant.Id, Assert.Single(await service.ListAsync("user-b")).Id);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_ReturnsNullForMissingOrNonOwnedEntry()
+    {
+        var service = new LocalUserPlantService();
+        var owned = await service.UpsertAfterRecommendationAsync(
+            "user-a",
+            new Plant { Id = 8, CommonName = "Basil", ScientificName = "Ocimum basilicum" });
+
+        Assert.Null(await service.RemoveAsync("user-b", owned.Id));
+        Assert.Null(await service.RemoveAsync("user-a", owned.Id + 100));
+        Assert.Equal(owned.Id, Assert.Single(await service.ListAsync("user-a")).Id);
+    }
 }
