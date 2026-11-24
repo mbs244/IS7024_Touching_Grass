@@ -1,0 +1,86 @@
+@page "/"
+@{
+    ViewData["Title"] = "PlantWise";
+}
+
+<section class="plantwise-homepage" aria-labelledby="homepage-title">
+    <div class="container">
+        <header class="plantwise-homepage__brand">
+            <p class="plantwise-homepage__tagline lead mb-0">Water smarter. Grow better.</p>
+        </header>
+
+        <div class="plantwise-homepage__hero-layout">
+            <div class="plantwise-homepage__hero-copy">
+                <div class="plantwise-homepage__hero">
+                    <p class="text-uppercase fw-semibold mb-3">Smarter care for every garden</p>
+                    <h1 id="homepage-title" class="display-4">Make every drop count.</h1>
+                    <p class="lead">
+                        Get watering guidance tailored to your plants and local conditions,
+                        so you can make more informed watering decisions.
+                    </p>
+                    <form method="get" action="/Index" class="plantwise-homepage__start" aria-labelledby="get-started-heading">
+                        <div class="plantwise-homepage__start-heading">
+                            <h2 id="get-started-heading" class="h3">Find your plant care rhythm</h2>
+                            <p id="zip-help" class="text-muted">Enter your ZIP code to get started.</p>
+                        </div>
+
+                        <div class="plantwise-homepage__zip-field">
+                            <label for="zipCode" class="form-label">Enter your ZIP code</label>
+                            <input id="zipCode"
+                                   name="zipCode"
+                                   type="text"
+                                   class="form-control"
+                                   placeholder="5-digit ZIP code"
+                                   inputmode="numeric"
+                                   autocomplete="postal-code"
+                                   pattern="[0-9]{5}"
+                                   minlength="5"
+                                   maxlength="5"
+                                   required
+                                   aria-describedby="zip-help zip-format-help" />
+                            <div id="zip-format-help" class="form-text">
+                                Use five digits, including any leading zero.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">Get Started</button>
+                    </form>
+                </div>
+            </div>
+
+            <figure class="plantwise-homepage__hero-image">
+                <img src="/images/plantwise-hero.png"
+                     alt="Lush indoor plants gathered in a bright, welcoming space"
+                     loading="eager" />
+            </figure>
+        </div>
+
+        <section class="plantwise-homepage__how-it-works py-5" aria-labelledby="how-it-works-heading">
+            <div class="text-center mb-4">
+                <h2 id="how-it-works-heading">How It Works</h2>
+                <p class="lead">Simple steps toward more informed plant care.</p>
+            </div>
+
+            <ol class="row row-cols-1 row-cols-md-3 g-4 list-unstyled mb-0">
+                <li class="col">
+                    <article class="h-100">
+                        <p class="h5">1. Enter Your Location</p>
+                        <p>Share your ZIP code so PlantWise can understand your local conditions.</p>
+                    </article>
+                </li>
+                <li class="col">
+                    <article class="h-100">
+                        <p class="h5">2. Choose Your Plants</p>
+                        <p>Tell us which plants you want to care for in your garden.</p>
+                    </article>
+                </li>
+                <li class="col">
+                    <article class="h-100">
+                        <p class="h5">3. Get Watering Guidance</p>
+                        <p>Receive guidance to help you water with greater confidence.</p>
+                    </article>
+                </li>
+            </ol>
+        </section>
+    </div>
+</section>
