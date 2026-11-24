@@ -1,8 +1,12 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Touching_Grass.Data;
+using Touching_Grass.Models;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
 
@@ -25,6 +29,18 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
         });
 
         builder.WebHost.UseTestServer();
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseInMemoryDatabase("Touching_Grass.TestHost.Identity"));
+        builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+        {
+            options.SignIn.RequireConfirmedAccount = false;
+        })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+        builder.Services.AddAuthorization();
+        builder.Services.AddSingleton<LocalUserPlantService>();
+        builder.Services.AddSingleton<IUserPlantService>(services =>
+            services.GetRequiredService<LocalUserPlantService>());
         builder.Services.AddRazorPages();
         builder.Services.AddSingleton<JsonDataLoader>();
         builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
@@ -33,6 +49,8 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
 
         _application = builder.Build();
         _application.UseRouting();
+        _application.UseAuthentication();
+        _application.UseAuthorization();
         _application.MapRazorPages();
 
         await _application.StartAsync();
