@@ -1,113 +1,84 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Remove Plants from My Plants
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+**Branch**: `remove-plant-delriogo` | **Date**: 2026-11-23 | **Spec**: [spec.md](./spec.md)
 
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit-plan` command; its definition describes the execution workflow.
+**Input**: Feature specification from `/specs/004-remove-plants/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Add a plant-specific remove action to the authenticated My Plants page. Extend `IUserPlantService` with an owner-scoped removal operation and implement it in both `LocalUserPlantService` and the Azure-persisted `UserPlantService`. On success, use the removed plant's saved name in a confirmation; preserve the plant catalog, other users' entries, the home page, and the existing schema.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
+**Language/Version**: C# on .NET 10
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+**Primary Dependencies**: ASP.NET Core Razor Pages, ASP.NET Core Identity, Entity Framework Core, existing `IUserPlantService`; no new packages
 
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+**Storage**: Development uses the process-local `LocalUserPlantService`; Azure uses `UserPlantService` with the existing MySQL-backed `ApplicationDbContext`
 
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+**Testing**: Existing xUnit project (`tests/Touching_Grass.UnitTests`) with ASP.NET Core `WebApplicationFactory` and EF Core InMemory support
 
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+**Target Platform**: Existing ASP.NET Core web application, locally run and Azure-hosted
 
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
+**Project Type**: Server-rendered Razor Pages web application
 
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+**Performance Goals**: Remove one user's selected list entry in one form submission; no additional latency target is specified
 
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+**Constraints**: Limit UI changes to My Plants; enforce ownership using the authenticated user's ID and the selected entry ID; do not change the database schema or add migrations; preserve existing favorite behavior and home-page behavior
 
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
-
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Scale/Scope**: One My Plants page, the shared user-plant service contract and its two implementations, and focused tests; no new entities, persistence, pages, or dependencies
 
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+| Principle / constraint | Gate | Evidence |
+|---|---|---|
+| I. Code Quality and Clarity | PASS | Reuse the existing page, `IUserPlantService`, user identity, and service implementations; keep ownership filtering in the service boundary. |
+| II. Testable Delivery | PASS | Add tests for both service implementations, owner isolation, missing entries, and the authenticated page flow and feedback. |
+| III. Consistent User Experience | PASS | Keep the action on My Plants, identify each target in its button name, and show success or non-success feedback. |
+| IV. Performance by Design | PASS | Operate on one selected user-plant entry and avoid catalog, home-page, or unrelated persistence work. |
+| V. Maintainable Simplicity | PASS | Add one service operation and one page action; add no dependencies or data model changes. |
+| Engineering constraints | PASS | Derive the user ID from the authenticated principal, honor request cancellation, and make no schema or migration changes. |
+
+**Post-design re-check**: PASS. The design uses the existing local and Azure service registrations, filters every removal by owner and entry ID, adds no persistence shape changes, and confines presentation changes to My Plants.
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit-plan command output)
-├── research.md          # Phase 0 output (/speckit-plan command)
-├── data-model.md        # Phase 1 output (/speckit-plan command)
-├── quickstart.md        # Phase 1 output (/speckit-plan command)
-├── contracts/           # Phase 1 output (/speckit-plan command)
-└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
+specs/004-remove-plants/
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+├── contracts/
+│   └── my-plants-removal.md
+└── tasks.md             # Created by /speckit-tasks, not by /speckit-plan
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+Touching_Grass/
+├── Pages/
+│   └── MyPlants/
+│       ├── Index.cshtml       # Add the per-plant remove form and feedback
+│       └── Index.cshtml.cs    # Add the authenticated remove handler
+└── Services/
+    ├── IUserPlantService.cs   # Add the owner-scoped removal contract
+    ├── LocalUserPlantService.cs
+    └── UserPlantService.cs
 
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+tests/Touching_Grass.UnitTests/
+├── LocalUserPlantServiceTests.cs
+├── MyPlantsPageTests.cs       # Add authenticated page-flow coverage
+└── UserPlantServiceTests.cs   # Add owner-scoped persistence-service coverage
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Extend the existing single ASP.NET Core Razor Pages project and xUnit project. Only My Plants presentation files, the existing service abstraction and both implementations, and focused tests are in scope. `UserPlant`, `ApplicationDbContext`, migrations, home-page files, and plant-catalog data remain unchanged.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| [e.g., 4th project] | [current need] | [why 3 projects insufficient] |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient] |
+No constitution violations or added architectural complexity.
