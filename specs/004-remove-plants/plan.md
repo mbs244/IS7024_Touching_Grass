@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add a plant-specific remove action to the authenticated My Plants page. Extend `IUserPlantService` with an owner-scoped removal operation and implement it in both `LocalUserPlantService` and the Azure-persisted `UserPlantService`. On success, use the removed plant's saved name in a confirmation; preserve the plant catalog, other users' entries, the home page, and the existing schema.
+Add a plant-specific remove action to the authenticated My Plants page. Extend `IUserPlantService` with an owner-scoped removal operation and implement it in both `LocalUserPlantService` and the Azure-persisted `UserPlantService`. On success, use the removed plant's saved name in a confirmation. On a storage error, log the exception, return to My Plants with the specified failure message, and show no success confirmation. Preserve the plant catalog, other users' entries, the home page, and the existing schema.
 
 ## Technical Context
 
@@ -35,13 +35,13 @@ Add a plant-specific remove action to the authenticated My Plants page. Extend `
 | Principle / constraint | Gate | Evidence |
 |---|---|---|
 | I. Code Quality and Clarity | PASS | Reuse the existing page, `IUserPlantService`, user identity, and service implementations; keep ownership filtering in the service boundary. |
-| II. Testable Delivery | PASS | Add tests for both service implementations, owner isolation, missing entries, and the authenticated page flow and feedback. |
+| II. Testable Delivery | PASS | Add tests for both service implementations, owner isolation, missing entries, and authenticated page success and storage-error flows. |
 | III. Consistent User Experience | PASS | Keep the action on My Plants, identify each target in its button name, and show success or non-success feedback. |
 | IV. Performance by Design | PASS | Operate on one selected user-plant entry and avoid catalog, home-page, or unrelated persistence work. |
 | V. Maintainable Simplicity | PASS | Add one service operation and one page action; add no dependencies or data model changes. |
 | Engineering constraints | PASS | Derive the user ID from the authenticated principal, honor request cancellation, and make no schema or migration changes. |
 
-**Post-design re-check**: PASS. The design uses the existing local and Azure service registrations, filters every removal by owner and entry ID, adds no persistence shape changes, and confines presentation changes to My Plants.
+**Post-design re-check**: PASS. The design uses the existing local and Azure service registrations, filters every removal by owner and entry ID, logs and reports expected storage errors without reporting success, adds no persistence shape changes, and confines presentation changes to My Plants.
 
 ## Project Structure
 

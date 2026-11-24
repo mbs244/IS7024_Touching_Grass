@@ -14,7 +14,7 @@ Run the focused test project:
 dotnet test tests\Touching_Grass.UnitTests\Touching_Grass.UnitTests.csproj
 ```
 
-The tests should cover both service implementations, owner isolation, missing entries, and the authenticated My Plants form/confirmation flow.
+The tests should cover both service implementations, owner isolation, missing entries, the authenticated My Plants form/confirmation flow, and a simulated persistence error that returns to My Plants with the specified error message and no success confirmation.
 
 ## Local end-to-end check
 

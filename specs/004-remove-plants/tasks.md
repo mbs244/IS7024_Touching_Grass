@@ -60,12 +60,12 @@ No additional foundational work is required. Authentication, the shared service 
 
 > Write these tests first and confirm they fail before implementation.
 
-- [ ] T010 [US2] Extend `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs` to assert the plant-specific accessible button name and non-success feedback for stale and non-owned entry IDs.
+- [ ] T010 [US2] Extend `tests/Touching_Grass.UnitTests/MyPlantsPageTests.cs` to assert the plant-specific accessible button name and non-success feedback for stale/non-owned IDs; inject a `DbUpdateException` and assert redirect to My Plants, the exact error message, no success message, and the entry remains saved.
 
 ### Implementation for User Story 2
 
 - [ ] T011 [P] [US2] Change the visible button name in `Touching_Grass/Pages/MyPlants/Index.cshtml` to identify its action and plant (for example, `Remove Toyon`), and render failure feedback as an accessible message.
-- [ ] T012 [P] [US2] Update `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` so a `null` removal result sets generic non-success feedback without disclosing whether another user's entry exists or showing a success message; allow cancellation and unexpected persistence errors to follow normal error handling.
+- [ ] T012 [P] [US2] Update `Touching_Grass/Pages/MyPlants/Index.cshtml.cs` so a `null` removal result sets generic non-success feedback without disclosing whether another user's entry exists; catch `DbException` and `DbUpdateException` from removal, log them, set `Something went wrong. Your plant was not removed.`, redirect to My Plants, and never show success for the failed operation. Allow cancellation to propagate.
 
 **Checkpoint**: Removal controls identify their targets, and stale or non-owned requests receive accurate non-success feedback without affecting another user's list.
 

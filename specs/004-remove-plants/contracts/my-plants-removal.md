@@ -26,7 +26,7 @@ Task<UserPlant?> RemoveAsync(
 
 - On a returned entry, show a status confirmation containing its saved common name, e.g. `Toyon was removed from your plants.`
 - On a `null` result, show non-success feedback; do not show a success message.
-- A persistence failure must not be reported as a successful removal and follows the application's standard error handling.
+- On `DbException` or `DbUpdateException`, log the exception, redirect back to My Plants, show exactly `Something went wrong. Your plant was not removed.`, and do not show a success message. Do not convert request cancellation into this error message.
 - Each removal form has a visible button name that identifies both the action and plant, e.g. `Remove Toyon`.
 - Keep the existing favorite control separate and unchanged.
 

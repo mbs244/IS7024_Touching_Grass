@@ -35,14 +35,14 @@ As a user, I want each removal control to identify its plant and to receive clea
 **Acceptance Scenarios**:
 
 1. **Given** a plant is listed in My Plants, **When** its removal control is presented, **Then** the control's accessible name includes the plant's name and makes clear that it removes that plant.
-2. **Given** a removal cannot be completed, **When** the user attempts it, **Then** the plant remains in the list and the user receives an understandable failure message.
+2. **Given** a removal operation encounters an error, **When** the user attempts it, **Then** the user returns to My Plants, sees "Something went wrong. Your plant was not removed.", and receives no success confirmation.
 3. **Given** a user attempts to remove a plant belonging only to another user, **When** the request is handled, **Then** the other user's plant remains unchanged and is not removed from that user's list.
 
 ### Edge Cases
 
 - The user's list is empty: no plant-specific removal controls are shown.
 - A plant was already removed or is no longer available when a stale removal is attempted: no other user's plant is affected, and the user receives accurate feedback.
-- A removal fails: the plant remains visible in My Plants and no success confirmation is shown.
+- A removal operation encounters an error: the plant remains in the user's list, My Plants shows "Something went wrong. Your plant was not removed.", and no success confirmation is shown.
 - The same plant is present on the home page: removing it from My Plants does not remove or alter its home-page listing.
 - The same removal behavior is available in both locally run and Azure-hosted deployments.
 
@@ -57,7 +57,7 @@ As a user, I want each removal control to identify its plant and to receive clea
 - **FR-005**: Each Remove control MUST have an accessible name that clearly indicates the action and identifies the plant it removes.
 - **FR-006**: Plant removal MUST be limited to the My Plants experience and MUST NOT change the home page's plant listings or behavior.
 - **FR-007**: Plant removal MUST behave consistently in locally run and Azure-hosted deployments.
-- **FR-008**: If removal fails, the system MUST keep the plant in the user's list and communicate that removal did not succeed.
+- **FR-008**: If a removal operation encounters an error, the system MUST keep the plant in the user's list, return the user to My Plants, display "Something went wrong. Your plant was not removed.", and MUST NOT display a success confirmation.
 - **FR-009**: Removing a plant from a user's list MUST NOT remove the plant from other users' lists or from the available plant collection.
 
 ### Key Entities *(include if data involved)*
@@ -81,4 +81,4 @@ As a user, I want each removal control to identify its plant and to receive clea
 - The user is authenticated, and the application can identify which plant-list entries belong to that user.
 - Existing plant-list data and ownership associations are sufficient to support removal; the feature does not require new plant data or a change to the user's broader plant collection.
 - Feedback is presented on the My Plants page after the removal attempt.
-- Failure feedback uses the application's existing user-facing error presentation conventions.
+- The application can return the user to My Plants after a removal error and display the specified failure message there.
