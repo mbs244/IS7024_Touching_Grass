@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Touching_Grass.Data;
 using Touching_Grass.Models;
@@ -21,15 +22,17 @@ if (isDevelopment)
 }
 else
 {
-    var connectionString = Environment.GetEnvironmentVariable("MYSQLCONNSTR_localdb");
-    if (string.IsNullOrWhiteSpace(connectionString))
+    var configuredConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(configuredConnectionString))
     {
         throw new InvalidOperationException(
-            "Azure persistence mode requires the protected MYSQLCONNSTR_localdb setting.");
+            "Azure persistence mode requires the protected ConnectionStrings:DefaultConnection setting.");
     }
 
+    var connectionString = BuildManagedIdentityConnectionString(configuredConnectionString);
+
     builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseMySQL(connectionString));
+        options.UseSqlServer(connectionString));
     builder.Services.AddDefaultIdentity<ApplicationUser>(ConfigureIdentity)
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
@@ -101,6 +104,21 @@ static async Task ApplyPendingMigrationsAsync(WebApplication app)
         logger.LogCritical("Startup database migration failed; application readiness is blocked.");
         throw new InvalidOperationException("The application database is unavailable.");
     }
+}
+
+static string BuildManagedIdentityConnectionString(string configuredConnectionString)
+{
+    var builder = new SqlConnectionStringBuilder(configuredConnectionString);
+    if (!string.IsNullOrWhiteSpace(builder.UserID) || !string.IsNullOrWhiteSpace(builder.Password))
+    {
+        throw new InvalidOperationException(
+            "Azure persistence mode requires passwordless managed identity authentication.");
+    }
+
+    builder.Encrypt = true;
+    builder.TrustServerCertificate = false;
+    builder["Authentication"] = "Active Directory Managed Identity";
+    return builder.ConnectionString;
 }
 
 static void ConfigureIdentity(IdentityOptions options)

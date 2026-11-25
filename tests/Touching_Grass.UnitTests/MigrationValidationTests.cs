@@ -8,10 +8,10 @@ namespace Touching_Grass.UnitTests;
 public sealed class MigrationValidationTests
 {
     [Fact]
-    public void MySqlModelContainsIdentityAndOwnedPlantTables()
+    public void SqlServerModelContainsIdentityAndOwnedPlantTables()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseMySQL("Server=localhost;Port=3306;Database=validation;User ID=validation;Password=validation")
+            .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=validation;Trusted_Connection=True;TrustServerCertificate=True")
             .Options;
 
         using var context = new ApplicationDbContext(options);
@@ -26,10 +26,10 @@ public sealed class MigrationValidationTests
     }
 
     [Fact]
-    public void MySqlMigrationAssemblyContainsOnlyTheGeneratedInitialMigration()
+    public void SqlServerMigrationAssemblyContainsOnlyTheGeneratedInitialMigration()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseMySQL("Server=localhost;Port=3306;Database=validation;User ID=validation;Password=validation")
+            .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=validation;Trusted_Connection=True;TrustServerCertificate=True")
             .Options;
 
         using var context = new ApplicationDbContext(options);
@@ -39,6 +39,6 @@ public sealed class MigrationValidationTests
             .ToArray();
 
         Assert.Single(migrations);
-        Assert.EndsWith("_MySqlInitial", migrations[0], StringComparison.Ordinal);
+        Assert.EndsWith("_SqlServerInitial", migrations[0], StringComparison.Ordinal);
     }
 }

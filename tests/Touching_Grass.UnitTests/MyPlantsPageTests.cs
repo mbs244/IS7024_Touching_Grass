@@ -135,7 +135,7 @@ public sealed class MyPlantsPageTests
 
     private static WebApplicationFactory<Program> CreateFactory(bool throwOnRemove = false)
     {
-        Environment.SetEnvironmentVariable("MYSQLCONNSTR_localdb", null);
+        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", null);
         return new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseSetting("environment", "Development");

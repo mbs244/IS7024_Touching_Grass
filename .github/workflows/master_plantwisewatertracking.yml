@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - PlantwiseWaterTracking
+name: Build and deploy ASP.Net Core app to Azure Web App - PlantwiseOnSQLserver
 
 on:
   push:
@@ -35,18 +35,18 @@ jobs:
       - name: Run tests
         run: dotnet test Touching_Grass.slnx --configuration Release --no-build --no-restore
 
-      - name: Validate MySQL migrations
+      - name: Validate Azure SQL migrations
         shell: pwsh
         env:
-          MYSQL_VALIDATION_CONNECTION_STRING: ${{ secrets.MYSQL_VALIDATION_CONNECTION_STRING }}
+          AZURESQL_VALIDATION_CONNECTION_STRING: ${{ secrets.AZURESQL_VALIDATION_CONNECTION_STRING }}
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:MYSQL_VALIDATION_CONNECTION_STRING)) {
-            Write-Host 'No disposable MySQL validation database configured; external migration validation skipped.'
+          if ([string]::IsNullOrWhiteSpace($env:AZURESQL_VALIDATION_CONNECTION_STRING)) {
+            Write-Host 'No disposable Azure SQL validation database configured; external migration validation skipped.'
           } else {
             Write-Host 'Applying migrations only to the configured disposable validation database.'
             $env:DOTNET_ENVIRONMENT = 'Production'
             $env:ASPNETCORE_ENVIRONMENT = 'Production'
-            $env:MYSQLCONNSTR_localdb = $env:MYSQL_VALIDATION_CONNECTION_STRING
+            $env:ConnectionStrings__DefaultConnection = $env:AZURESQL_VALIDATION_CONNECTION_STRING
             dotnet ef database update --configuration Release --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
             dotnet ef database update --configuration Release --no-build --project Touching_Grass/Touching_Grass.csproj --startup-project Touching_Grass/Touching_Grass.csproj
           }
@@ -84,7 +84,7 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'PlantwiseWaterTracking'
+          app-name: 'PlantwiseOnSQLserver'
           slot-name: 'Production'
           package: .
 
