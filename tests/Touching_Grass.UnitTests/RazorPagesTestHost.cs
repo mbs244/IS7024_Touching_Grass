@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Globalization;
+using System.Net;
 using Touching_Grass.Data;
 using Touching_Grass.Models;
 using Touching_Grass.Repositories;
@@ -27,6 +29,7 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
             ContentRootPath = contentRootPath,
             EnvironmentName = "Development"
         });
+        builder.Configuration["VisualCrossing:ApiKey"] = "test-host-key";
 
         builder.WebHost.UseTestServer();
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -45,7 +48,37 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
         builder.Services.AddSingleton<JsonDataLoader>();
         builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
         builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
-        builder.Services.AddSingleton<IWateringCalculatorService, WateringCalculatorService>();
+        builder.Services.AddHttpClient<OpenMeteoService>(client =>
+                client.BaseAddress = new Uri("https://api.open-meteo.com/"))
+            .ConfigurePrimaryHttpMessageHandler(() => new FakeHttpMessageHandler(request =>
+            {
+                var timeZoneParameter = request.RequestUri!.Query
+                    .Split('&')
+                    .Single(parameter => parameter.StartsWith("timezone=", StringComparison.Ordinal));
+                var timeZone = Uri.UnescapeDataString(timeZoneParameter["timezone=".Length..]);
+                var period = WeatherPeriod.PreviousSevenCompleteDays(new ZipLocation
+                {
+                    TimeZoneId = timeZone
+                });
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(WeatherApiTestHelpers.OpenMeteoResponse(period, 1m))
+                };
+            }));
+        builder.Services.AddHttpClient<VisualCrossingService>(client =>
+                client.BaseAddress = new Uri("https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/"))
+            .ConfigurePrimaryHttpMessageHandler(() => new FakeHttpMessageHandler(request =>
+            {
+                var pathSegments = request.RequestUri!.AbsolutePath.Split('/');
+                var period = new WeatherPeriod(
+                    DateOnly.ParseExact(pathSegments[^2], "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    DateOnly.ParseExact(pathSegments[^1], "yyyy-MM-dd", CultureInfo.InvariantCulture));
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(WeatherApiTestHelpers.VisualCrossingResponse(period, 0.1m))
+                };
+            }));
+        builder.Services.AddScoped<IWateringCalculatorService, WateringCalculatorService>();
 
         _application = builder.Build();
         _application.UseRouting();

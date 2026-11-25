@@ -51,7 +51,26 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<JsonDataLoader>();
 builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
 builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
-builder.Services.AddSingleton<IWateringCalculatorService, WateringCalculatorService>();
+builder.Services.AddHttpClient<OpenMeteoService>((services, client) =>
+{
+    var configuration = services.GetRequiredService<IConfiguration>();
+    client.BaseAddress = new Uri(configuration["WeatherApis:OpenMeteo:BaseUrl"]
+        ?? throw new InvalidOperationException("Open-Meteo base URL is not configured."));
+    client.Timeout = TimeSpan.FromSeconds(
+        configuration.GetValue<double>("WeatherApis:OpenMeteo:TimeoutSeconds"));
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("PlantWise/1.0");
+});
+builder.Services.AddHttpClient<VisualCrossingService>((services, client) =>
+    {
+        var configuration = services.GetRequiredService<IConfiguration>();
+        client.BaseAddress = new Uri(configuration["WeatherApis:VisualCrossing:BaseUrl"]
+            ?? throw new InvalidOperationException("Visual Crossing base URL is not configured."));
+        client.Timeout = TimeSpan.FromSeconds(
+            configuration.GetValue<double>("WeatherApis:VisualCrossing:TimeoutSeconds"));
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("PlantWise/1.0");
+    })
+    .RemoveAllLoggers();
+builder.Services.AddScoped<IWateringCalculatorService, WateringCalculatorService>();
 
 var app = builder.Build();
 

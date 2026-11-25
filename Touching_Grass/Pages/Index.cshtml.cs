@@ -118,6 +118,11 @@ public class IndexModel : PageModel
             ModelState.AddModelError(string.Empty, "The request was canceled. Please try again.");
             return Page();
         }
+        catch (WeatherDataUnavailableException)
+        {
+            ModelState.AddModelError(string.Empty, WeatherDataUnavailableException.UserMessage);
+            return Page();
+        }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogError(exception, "Local PlantWise data could not be loaded.");
