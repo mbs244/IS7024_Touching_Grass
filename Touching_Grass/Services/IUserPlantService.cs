@@ -14,4 +14,6 @@ public interface IUserPlantService
         CancellationToken cancellationToken = default);
 
     Task<bool> ToggleFavoriteAsync(string userId, int id, CancellationToken cancellationToken = default);
+
+    Task<UserPlant?> RemoveAsync(string userId, int id, CancellationToken cancellationToken = default);
 }
