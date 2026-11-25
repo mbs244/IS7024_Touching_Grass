@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Touching_Grass.Models;
 
@@ -20,6 +21,16 @@ public sealed class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         builder.Entity<ApplicationUser>(entity =>
         {
             entity.Property(user => user.DefaultZipCode).HasMaxLength(5).IsRequired();
+            entity.Property(user => user.UserName).HasMaxLength(191);
+            entity.Property(user => user.NormalizedUserName).HasMaxLength(191);
+            entity.Property(user => user.Email).HasMaxLength(191);
+            entity.Property(user => user.NormalizedEmail).HasMaxLength(191);
+        });
+
+        builder.Entity<IdentityRole>(entity =>
+        {
+            entity.Property(role => role.Name).HasMaxLength(191);
+            entity.Property(role => role.NormalizedName).HasMaxLength(191);
         });
 
         builder.Entity<UserPlant>(entity =>
