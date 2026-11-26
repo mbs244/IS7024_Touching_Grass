@@ -55,6 +55,7 @@ builder.Services.AddSingleton<JsonDataLoader>();
 builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
 builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
 builder.Services.AddSingleton<IWateringCalculatorService, WateringCalculatorService>();
+builder.Services.AddSingleton<IWaterStatusMessageService, WaterStatusMessageService>();
 
 var app = builder.Build();
 
