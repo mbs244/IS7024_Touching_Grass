@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using System.Text.Json;
 using Touching_Grass.Models;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
@@ -12,12 +11,16 @@ namespace Touching_Grass.Pages;
 
 public class IndexModel : PageModel
 {
+    private const int MinimumAutocompleteLength = 3;
+    private const int MaximumAutocompleteSuggestions = 10;
+
     private readonly IPlantRepository _plantRepository;
     private readonly IWateringCalculatorService _wateringCalculator;
     private readonly IZipLookupService _zipLookupService;
     private readonly ILogger<IndexModel> _logger;
     private readonly IUserPlantService _userPlantService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IWaterStatusMessageService _waterStatusMessageService;
 
     public IndexModel(
         IPlantRepository plantRepository,
@@ -25,7 +28,8 @@ public class IndexModel : PageModel
         IZipLookupService zipLookupService,
         ILogger<IndexModel> logger,
         IUserPlantService userPlantService,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IWaterStatusMessageService waterStatusMessageService)
     {
         _plantRepository = plantRepository;
         _wateringCalculator = wateringCalculator;
@@ -33,6 +37,7 @@ public class IndexModel : PageModel
         _logger = logger;
         _userPlantService = userPlantService;
         _userManager = userManager;
+        _waterStatusMessageService = waterStatusMessageService;
     }
 
     [BindProperty(SupportsGet = true)]
@@ -45,6 +50,15 @@ public class IndexModel : PageModel
     [Display(Name = "Plant name")]
     [Required(ErrorMessage = "Plant name is required.")]
     public string PlantName { get; set; } = string.Empty;
+
+    [BindProperty]
+    public int? SelectedPlantId { get; set; }
+
+    public WaterRecommendation? Recommendation { get; private set; }
+
+    public WaterStatusMessage? WaterStatusMessage { get; private set; }
+
+    public string? RecommendationError { get; private set; }
 
     public async Task OnGetAsync()
     {
@@ -79,25 +93,36 @@ public class IndexModel : PageModel
                 return Page();
             }
 
-            var plantMatch = await _plantRepository.FindAsync(PlantName, cancellationToken);
-            if (plantMatch.Status == PlantMatchStatus.Missing)
+            Plant? plant = null;
+            if (SelectedPlantId is int selectedPlantId)
             {
-                ModelState.AddModelError(nameof(PlantName), "That plant is not in the supported plant dataset.");
-                return Page();
+                plant = await _plantRepository.FindByIdAsync(selectedPlantId, cancellationToken);
             }
 
-            if (plantMatch.Status == PlantMatchStatus.Ambiguous || plantMatch.Plant is null)
+            if (plant is null)
             {
-                ModelState.AddModelError(nameof(PlantName), "Enter a more specific plant name.");
-                return Page();
+                var plantMatch = await _plantRepository.FindAsync(PlantName, cancellationToken);
+                if (plantMatch.Status == PlantMatchStatus.Missing)
+                {
+                    ModelState.AddModelError(nameof(PlantName), "That plant is not in the supported plant dataset.");
+                    return Page();
+                }
+
+                if (plantMatch.Status == PlantMatchStatus.Ambiguous || plantMatch.Plant is null)
+                {
+                    ModelState.AddModelError(nameof(PlantName), "Enter a more specific plant name or choose a suggestion.");
+                    return Page();
+                }
+
+                plant = plantMatch.Plant;
             }
 
-            var recommendation = await _wateringCalculator.CalculateAsync(location, plantMatch.Plant, cancellationToken);
+            var recommendation = await _wateringCalculator.CalculateAsync(location, plant, cancellationToken);
             if (User.FindFirstValue(ClaimTypes.NameIdentifier) is string userId)
             {
                 try
                 {
-                    await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
+                    await _userPlantService.UpsertAfterRecommendationAsync(userId, plant, cancellationToken);
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                 {
@@ -110,8 +135,11 @@ public class IndexModel : PageModel
                         userId);
                 }
             }
-            TempData["WaterRecommendation"] = JsonSerializer.Serialize(recommendation);
-            return RedirectToPage("/Results", new { zipCode = ZipCode, plantName = PlantName });
+
+            Recommendation = recommendation;
+            WaterStatusMessage = _waterStatusMessageService.Create(recommendation.NetNeedInches);
+            RecommendationError = null;
+            return Page();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -120,14 +148,54 @@ public class IndexModel : PageModel
         }
         catch (WeatherDataUnavailableException)
         {
+            RecommendationError = WeatherDataUnavailableException.UserMessage;
             ModelState.AddModelError(string.Empty, WeatherDataUnavailableException.UserMessage);
             return Page();
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogError(exception, "Local PlantWise data could not be loaded.");
+            RecommendationError = "PlantWise data is temporarily unavailable. Please try again.";
             ModelState.AddModelError(string.Empty, "PlantWise data is temporarily unavailable. Please try again.");
             return Page();
+        }
+    }
+
+    public async Task<IActionResult> OnGetAutocompleteAsync(string query, CancellationToken cancellationToken)
+    {
+        var normalizedQuery = query?.Trim() ?? string.Empty;
+        if (normalizedQuery.Length < MinimumAutocompleteLength)
+        {
+            return new JsonResult(new { suggestions = Array.Empty<PlantSuggestionOption>(), noResultsMessage = (string?)null });
+        }
+
+        try
+        {
+            var matches = await _plantRepository.SearchAsync(normalizedQuery, cancellationToken);
+            var suggestions = matches
+                .Take(MaximumAutocompleteSuggestions)
+                .Select(plant => new PlantSuggestionOption
+                {
+                    PlantId = plant.Id,
+                    CommonName = plant.CommonName,
+                    ScientificName = plant.ScientificName
+                })
+                .ToList();
+
+            var noResultsMessage = suggestions.Count == 0
+                ? "No matching plants found. Try another common or scientific name."
+                : null;
+
+            return new JsonResult(new { suggestions, noResultsMessage });
+        }
+        catch (Exception exception)
+        {
+            _logger.LogWarning(exception, "Plant autocomplete lookup failed.");
+            return new JsonResult(new
+            {
+                suggestions = Array.Empty<PlantSuggestionOption>(),
+                noResultsMessage = "Plant suggestions are temporarily unavailable."
+            });
         }
     }
 }

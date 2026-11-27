@@ -17,25 +17,22 @@ public sealed class HomepageIntegrationTests : IClassFixture<RazorPagesTestHost>
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("PlantWise", content);
-        Assert.Contains("Water smarter. Grow better.", content);
-        Assert.Contains("informed watering decisions", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("location", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("plant", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Dynamic watering advice for your plants that knows the weather.", content);
+        Assert.Contains("id=\"watering-form\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("name=\"ZipCode\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("name=\"PlantName\"", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public async Task RootPageKeepsWateringWorkflowResponsibilitiesOnExistingPages()
+    public async Task RootPageOwnsUnifiedWateringWorkflowResponsibilities()
     {
         var response = await _host.Client.GetAsync("/");
         var content = await response.Content.ReadAsStringAsync();
 
         response.EnsureSuccessStatusCode();
-        Assert.Contains("<form method=\"get\" action=\"/Index\"", content);
-        Assert.DoesNotContain("name=\"PlantName\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("WaterRecommendation", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("ZipLookupService", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("WateringCalculatorService", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("HttpClient", content, StringComparison.Ordinal);
-        Assert.DoesNotContain("fetch(", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("<form method=\"post\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("name=\"SelectedPlantId\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("id=\"plant-suggestions\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("id=\"recommendation-heading\"", content, StringComparison.OrdinalIgnoreCase);
     }
 }

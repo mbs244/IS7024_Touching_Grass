@@ -16,15 +16,9 @@ public sealed class HomepageNavigationIntegrationTests : IClassFixture<RazorPage
         var content = await response.Content.ReadAsStringAsync();
 
         response.EnsureSuccessStatusCode();
-        Assert.Contains("How It Works", content);
-
-        var locationIndex = content.IndexOf("Enter Your Location", StringComparison.Ordinal);
-        var plantsIndex = content.IndexOf("Choose Your Plants", StringComparison.Ordinal);
-        var guidanceIndex = content.IndexOf("Get Watering Guidance", StringComparison.Ordinal);
-
-        Assert.True(locationIndex >= 0, "The Enter Your Location step was not found.");
-        Assert.True(plantsIndex > locationIndex, "Choose Your Plants must follow Enter Your Location.");
-        Assert.True(guidanceIndex > plantsIndex, "Get Watering Guidance must follow Choose Your Plants.");
+        Assert.Contains("id=\"watering-form\"", content);
+        Assert.Contains("name=\"ZipCode\"", content);
+        Assert.Contains("name=\"PlantName\"", content);
     }
 
     [Fact]
@@ -35,15 +29,15 @@ public sealed class HomepageNavigationIntegrationTests : IClassFixture<RazorPage
 
         response.EnsureSuccessStatusCode();
         AssertLink(content, "navbar-brand", "/", "PlantWise");
-        AssertLink(content, "nav-link text-dark", "/", "Home");
-        AssertLink(content, "nav-link text-dark", "/Index", "Watering Guide");
+        AssertLink(content, "nav-link text-dark", "/", "Watering Guide");
+        AssertLink(content, "nav-link text-dark", "/Plants", "Plant Search");
         AssertLink(content, "nav-link text-dark", "/Privacy", "Privacy");
         Assert.Contains("navbar navbar-expand-sm navbar-toggleable-sm", content);
         Assert.Contains("navbar-toggler", content);
         Assert.Contains("data-bs-toggle=\"collapse\"", content);
         Assert.Contains("data-bs-target=\".navbar-collapse\"", content);
 
-        foreach (var path in new[] { "/", "/Index", "/Privacy" })
+        foreach (var path in new[] { "/", "/Plants", "/Privacy" })
         {
             var destinationResponse = await _host.Client.GetAsync(path);
             destinationResponse.EnsureSuccessStatusCode();

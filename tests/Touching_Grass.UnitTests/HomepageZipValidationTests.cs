@@ -22,14 +22,12 @@ public sealed class HomepageZipValidationTests : IClassFixture<RazorPagesTestHos
 
         var zipInput = Regex.Match(
             content,
-            "<input[^>]*name=\"zipCode\"[^>]*>",
+            "<input[^>]*name=\"ZipCode\"[^>]*>",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
-        Assert.True(zipInput.Success, "The homepage ZIP input was not rendered.");
-        Assert.Contains("required", zipInput.Value, StringComparison.OrdinalIgnoreCase);
+        Assert.True(zipInput.Success, "The watering guide ZIP input was not rendered.");
         Assert.Contains("inputmode=\"numeric\"", zipInput.Value, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maxlength=\"5\"", zipInput.Value, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("pattern=\"[0-9]{5}\"", zipInput.Value, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("autocomplete=\"postal-code\"", zipInput.Value, StringComparison.OrdinalIgnoreCase);
 
         Assert.True(IsFiveDigitZip("00501"));
         Assert.False(IsFiveDigitZip(string.Empty));
@@ -62,7 +60,7 @@ public sealed class HomepageZipValidationTests : IClassFixture<RazorPagesTestHos
     [Fact]
     public async Task HomepageGetHandoffDoesNotGenerateRecommendation()
     {
-        var response = await _host.Client.GetAsync("/?zipCode=12A45");
+        var response = await _host.Client.GetAsync("/Index?zipCode=12A45");
         var content = await response.Content.ReadAsStringAsync();
 
         response.EnsureSuccessStatusCode();

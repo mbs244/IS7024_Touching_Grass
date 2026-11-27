@@ -404,3 +404,12 @@ body {
     animation-iteration-count: 1 !important;
   }
 }
+
+#plant-suggestions {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.plantwise-suggestion-item {
+  cursor: pointer;
+}

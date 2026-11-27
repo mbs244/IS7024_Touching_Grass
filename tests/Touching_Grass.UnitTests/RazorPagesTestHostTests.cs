@@ -12,12 +12,14 @@ public sealed class RazorPagesTestHostTests : IClassFixture<RazorPagesTestHost>
     [Fact]
     public async Task HostsExistingIndexPage()
     {
-        var response = await _host.Client.GetAsync("/Index");
+        var response = await _host.Client.GetAsync("/");
         var content = await response.Content.ReadAsStringAsync();
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("id=\"watering-form\"", content);
         Assert.Contains("name=\"ZipCode\"", content);
         Assert.Contains("name=\"PlantName\"", content);
+        Assert.Contains("name=\"SelectedPlantId\"", content);
+        Assert.Contains("Plantwise - Watering Guide", content);
     }
 }

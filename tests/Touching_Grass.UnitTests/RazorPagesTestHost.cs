@@ -44,7 +44,10 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
         builder.Services.AddSingleton<LocalUserPlantService>();
         builder.Services.AddSingleton<IUserPlantService>(services =>
             services.GetRequiredService<LocalUserPlantService>());
-        builder.Services.AddRazorPages();
+        builder.Services.AddRazorPages(options =>
+        {
+            options.Conventions.AddPageRoute("/Index", "/Index");
+        });
         builder.Services.AddSingleton<JsonDataLoader>();
         builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();
         builder.Services.AddSingleton<IPlantRepository, PlantRepository>();
@@ -79,6 +82,7 @@ public sealed class RazorPagesTestHost : IAsyncLifetime
                 };
             }));
         builder.Services.AddScoped<IWateringCalculatorService, WateringCalculatorService>();
+        builder.Services.AddSingleton<IWaterStatusMessageService, WaterStatusMessageService>();
 
         _application = builder.Build();
         _application.UseRouting();

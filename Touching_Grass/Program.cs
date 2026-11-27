@@ -49,7 +49,10 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/Login";
 });
-builder.Services.AddRazorPages();
+builder.Services.AddRazorPages(options =>
+{
+    options.Conventions.AddPageRoute("/Index", "/Index");
+});
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton<JsonDataLoader>();
 builder.Services.AddSingleton<IZipLookupService, ZipLookupService>();

@@ -12,7 +12,7 @@ public sealed class WorkflowRegressionIntegrationTests : IClassFixture<RazorPage
     }
 
     [Fact]
-    public async Task ValidExistingFormSubmissionRedirectsToResultsWithRecommendation()
+    public async Task ValidExistingFormSubmissionDisplaysRecommendationOnUnifiedLandingPage()
     {
         var formResponse = await _host.Client.GetAsync("/Index");
         var formContent = await formResponse.Content.ReadAsStringAsync();
@@ -42,8 +42,10 @@ public sealed class WorkflowRegressionIntegrationTests : IClassFixture<RazorPage
         request.Headers.Add("Cookie", antiforgeryCookie);
 
         using var response = await _host.Client.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
 
-        Assert.Equal(System.Net.HttpStatusCode.Redirect, response.StatusCode);
-        Assert.StartsWith("/Results", response.Headers.Location?.OriginalString, StringComparison.Ordinal);
+        Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("id=\"recommendation-heading\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("The recommendation is no longer available", content, StringComparison.OrdinalIgnoreCase);
     }
 }

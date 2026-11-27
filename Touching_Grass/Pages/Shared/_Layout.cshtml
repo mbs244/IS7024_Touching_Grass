@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Touching_Grass</title>
+    <title>@(ViewData["Title"] ?? "Plantwise")</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -21,13 +21,10 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/">Home</a>
+                            <a class="nav-link text-dark" href="/">Watering Guide</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Index">Watering Guide</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Plants">Plants</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Plants">Plant Search</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
@@ -35,7 +32,7 @@
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item"><a class="nav-link text-dark" asp-page="/MyPlants/Index">My plants</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Account/Profile">Profile</a></li>
+                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Account/Profile">My Profile</a></li>
                             <li class="nav-item"><partial name="_Logout" /></li>
                         }
                         else
