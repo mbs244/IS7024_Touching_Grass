@@ -97,7 +97,19 @@ public sealed class DetailsModel : PageModel
             return Page();
         }
 
-        Recommendation = await _calculator.CalculateAsync(location, plant, cancellationToken);
+        try
+        {
+            Recommendation = await _calculator.CalculateAsync(location, plant, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (WeatherDataUnavailableException)
+        {
+            ErrorMessage = WeatherDataUnavailableException.UserMessage;
+        }
+
         return Page();
     }
 }
