@@ -34,6 +34,22 @@ public sealed class PlantRepository : IPlantRepository
         };
     }
 
+    public async Task<IReadOnlyList<Plant>> SearchAsync(string searchTerm, CancellationToken cancellationToken = default)
+    {
+        var normalizedTerm = searchTerm?.Trim() ?? string.Empty;
+        if (normalizedTerm.Length == 0)
+        {
+            return [];
+        }
+
+        var plants = await _dataLoader.LoadAsync<Plant>("plants.json", cancellationToken);
+        return plants
+            .Where(plant => plant.CommonName.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase) ||
+                            plant.ScientificName.Contains(normalizedTerm, StringComparison.OrdinalIgnoreCase))
+            .Take(50)
+            .ToList();
+    }
+
     public async Task<Plant?> FindByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var plants = await _dataLoader.LoadAsync<Plant>("plants.json", cancellationToken);
