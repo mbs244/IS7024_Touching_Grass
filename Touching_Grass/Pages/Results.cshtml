@@ -1,11 +1,15 @@
 @page
 @model ResultsModel
 @{
-    ViewData["Title"] = "Watering Recommendation";
+    ViewData["Title"] = "Plantwise - Watering Guide Results";
 }
 
 <div class="row justify-content-center">
     <div class="col-lg-9">
+        <div class="plantwise-page-brand mb-3">
+            <img src="~/images/plant_wise_logo.png" alt="PlantWise logo" class="plantwise-page-brand__logo" />
+            <p class="h4 mb-0">PlantWise</p>
+        </div>
         <h1 class="display-6">Watering recommendation</h1>
 
         @if (Model.Recommendation is null)
@@ -13,7 +17,7 @@
             <div class="alert alert-warning" role="alert">
                 @Model.ErrorMessage
             </div>
-            <a asp-page="/Index" class="btn btn-primary">Start a new lookup</a>
+            <a href="/" class="btn btn-primary">Start a new lookup</a>
         }
         else
         {
@@ -49,7 +53,7 @@
             </div>
 
             <p class="small text-muted">This estimate uses temporary mock weather values for the first PlantWise vertical slice.</p>
-            <a asp-page="/Index" class="btn btn-outline-primary">Calculate another plant</a>
+            <a href="/" class="btn btn-outline-primary">Calculate another plant</a>
         }
     </div>
 </div>

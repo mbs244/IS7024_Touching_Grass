@@ -17,15 +17,10 @@ public sealed class HomepageAccessibilityIntegrationTests : IClassFixture<RazorP
         var content = await GetHomepageAsync();
 
         Assert.Contains("<main", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("<section", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("<h1 id=\"homepage-title\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("<h2 id=\"get-started-heading\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("<h2 id=\"how-it-works-heading\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("aria-labelledby=\"homepage-title\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("aria-labelledby=\"get-started-heading\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("aria-labelledby=\"how-it-works-heading\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("src=\"/images/plantwise-hero.png\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("alt=\"Lush indoor plants gathered in a bright, welcoming space\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("<h1", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("id=\"watering-form\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("data-plant-input", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("id=\"plant-suggestions\"", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -33,17 +28,12 @@ public sealed class HomepageAccessibilityIntegrationTests : IClassFixture<RazorP
     {
         var content = await GetHomepageAsync();
 
-        Assert.Contains("<label for=\"zipCode\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("id=\"zipCode\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("name=\"zipCode\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("required", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("pattern=\"[0-9]{5}\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("minlength=\"5\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("maxlength=\"5\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("aria-describedby=\"zip-help zip-format-help\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("name=\"ZipCode\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("autocomplete=\"postal-code\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("inputmode=\"numeric\"", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("aria-describedby=\"zip-help\"", content, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("id=\"zip-help\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("id=\"zip-format-help\"", content, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("five digits", content, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("five-digit", content, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -55,21 +45,21 @@ public sealed class HomepageAccessibilityIntegrationTests : IClassFixture<RazorP
         Assert.True(navigation.Success, "The homepage layout navigation was not found.");
 
         var navigationContent = navigation.Value;
-        Assert.Contains(">Home</a>", navigationContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(">Watering Guide</a>", navigationContent, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(">Plant Search</a>", navigationContent, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(">Privacy</a>", navigationContent, StringComparison.OrdinalIgnoreCase);
 
-        var homeIndex = navigationContent.IndexOf(">Home</a>", StringComparison.OrdinalIgnoreCase);
         var wateringIndex = navigationContent.IndexOf(">Watering Guide</a>", StringComparison.OrdinalIgnoreCase);
+        var searchIndex = navigationContent.IndexOf(">Plant Search</a>", StringComparison.OrdinalIgnoreCase);
         var privacyIndex = navigationContent.IndexOf(">Privacy</a>", StringComparison.OrdinalIgnoreCase);
-        Assert.True(homeIndex >= 0 && homeIndex < wateringIndex && wateringIndex < privacyIndex,
-            "Navigation links must appear in Home, Watering Guide, Privacy order.");
+        Assert.True(wateringIndex >= 0 && wateringIndex < searchIndex && searchIndex < privacyIndex,
+            "Navigation links must appear in Watering Guide, Plant Search, Privacy order.");
 
-        var startForm = Regex.Match(content, "<form\\b[^>]*action=\"/Index\"[\\s\\S]*?</form>", RegexOptions.IgnoreCase);
-        Assert.True(startForm.Success, "The Get Started form targeting /Index was not found.");
-        Assert.Contains("method=\"get\"", startForm.Value, StringComparison.OrdinalIgnoreCase);
+        var startForm = Regex.Match(content, "<form\\b[^>]*id=\"watering-form\"[\\s\\S]*?</form>", RegexOptions.IgnoreCase);
+        Assert.True(startForm.Success, "The watering form was not found.");
+        Assert.Contains("method=\"post\"", startForm.Value, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("<button type=\"submit\"", startForm.Value, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains(">Get Started</button>", startForm.Value, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Calculate watering need", startForm.Value, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string> GetHomepageAsync()
