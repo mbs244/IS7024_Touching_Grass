@@ -126,3 +126,4 @@ public class IndexModel : PageModel
         }
     }
 }
+// This is a note to trigger a change to merge for testing the CI/CD pipeline.
