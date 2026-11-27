@@ -1,4 +1,7 @@
 using System.Globalization;
+using System.Net;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 using Touching_Grass.Models;
 using Touching_Grass.Services;
 
@@ -30,11 +33,33 @@ public sealed class WaterStatusMessageServiceTests
     [Fact]
     public async Task CreateAgreesWithWateringCalculatorOutput()
     {
-        var location = new ZipLocation
+        var period = WeatherApiTestHelpers.Period;
+        using var openMeteoClient = new HttpClient(new FakeHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(WeatherApiTestHelpers.OpenMeteoResponse(period, 2.1771428571428571428571428571m))
+            }))
         {
-            ZipCode = "95814",
-            TimeZoneId = "America/Los_Angeles"
+            BaseAddress = new Uri("https://open-meteo.test/")
         };
+        using var visualCrossingClient = new HttpClient(new FakeHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(WeatherApiTestHelpers.VisualCrossingResponse(period, 0.0142857142857142857142857143m))
+            }))
+        {
+            BaseAddress = new Uri("https://visual-crossing.test/")
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["VisualCrossing:ApiKey"] = "test-key"
+            })
+            .Build();
+        var calculator = new WateringCalculatorService(
+            new OpenMeteoService(openMeteoClient, NullLogger<OpenMeteoService>.Instance),
+            new VisualCrossingService(visualCrossingClient, configuration));
+
         var plant = new Plant
         {
             CommonName = "Toyon",
@@ -42,10 +67,10 @@ public sealed class WaterStatusMessageServiceTests
             WaterFactor = 0.40m
         };
 
-        var recommendation = await new WateringCalculatorService().CalculateAsync(location, plant);
+        var recommendation = await calculator.CalculateAsync(WeatherApiTestHelpers.Location, plant);
         var status = _service.Create(recommendation.NetNeedInches);
 
-        Assert.Equal(0.14m, recommendation.NetNeedInches);
+        Assert.Equal(0.14m, decimal.Round(recommendation.NetNeedInches, 2, MidpointRounding.AwayFromZero));
         Assert.Equal("Water lightly this week: about 0.14 in.", status.Message);
     }
 
