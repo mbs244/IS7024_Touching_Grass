@@ -6,7 +6,7 @@ name: Build and deploy ASP.Net Core app to Azure Web App - PlantwiseOnSQLserver
 on:
   push:
     branches:
-      - 'user_data_sheppamu'
+      - 'master'
   workflow_dispatch:
 
 jobs:
