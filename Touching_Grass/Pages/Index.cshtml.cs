@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 using System.Text.Json;
+using Touching_Grass.Models;
 using Touching_Grass.Repositories;
 using Touching_Grass.Services;
 
@@ -13,20 +16,26 @@ public class IndexModel : PageModel
     private readonly IWateringCalculatorService _wateringCalculator;
     private readonly IZipLookupService _zipLookupService;
     private readonly ILogger<IndexModel> _logger;
+    private readonly IUserPlantService _userPlantService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public IndexModel(
         IPlantRepository plantRepository,
         IWateringCalculatorService wateringCalculator,
         IZipLookupService zipLookupService,
-        ILogger<IndexModel> logger)
+        ILogger<IndexModel> logger,
+        IUserPlantService userPlantService,
+        UserManager<ApplicationUser> userManager)
     {
         _plantRepository = plantRepository;
         _wateringCalculator = wateringCalculator;
         _zipLookupService = zipLookupService;
         _logger = logger;
+        _userPlantService = userPlantService;
+        _userManager = userManager;
     }
 
-    [BindProperty]
+    [BindProperty(SupportsGet = true)]
     [Display(Name = "ZIP code")]
     [Required(ErrorMessage = "ZIP code is required.")]
     [RegularExpression(@"^\d{5}$", ErrorMessage = "Enter a valid five-digit ZIP code.")]
@@ -36,6 +45,20 @@ public class IndexModel : PageModel
     [Display(Name = "Plant name")]
     [Required(ErrorMessage = "Plant name is required.")]
     public string PlantName { get; set; } = string.Empty;
+
+    public async Task OnGetAsync()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        var currentUser = await _userManager.GetUserAsync(User);
+        if (!string.IsNullOrWhiteSpace(currentUser?.DefaultZipCode))
+        {
+            ZipCode = currentUser.DefaultZipCode;
+        }
+    }
 
     public async Task<IActionResult> OnPostAsync(CancellationToken cancellationToken)
     {
@@ -70,6 +93,23 @@ public class IndexModel : PageModel
             }
 
             var recommendation = await _wateringCalculator.CalculateAsync(location, plantMatch.Plant, cancellationToken);
+            if (User.FindFirstValue(ClaimTypes.NameIdentifier) is string userId)
+            {
+                try
+                {
+                    await _userPlantService.UpsertAfterRecommendationAsync(userId, plantMatch.Plant, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogWarning(exception,
+                        "Optional user-plant recommendation save failed for user {UserId}; returning the calculation result.",
+                        userId);
+                }
+            }
             TempData["WaterRecommendation"] = JsonSerializer.Serialize(recommendation);
             return RedirectToPage("/Results", new { zipCode = ZipCode, plantName = PlantName });
         }
@@ -78,7 +118,12 @@ public class IndexModel : PageModel
             ModelState.AddModelError(string.Empty, "The request was canceled. Please try again.");
             return Page();
         }
-        catch (InvalidOperationException exception)
+        catch (WeatherDataUnavailableException)
+        {
+            ModelState.AddModelError(string.Empty, WeatherDataUnavailableException.UserMessage);
+            return Page();
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogError(exception, "Local PlantWise data could not be loaded.");
             ModelState.AddModelError(string.Empty, "PlantWise data is temporarily unavailable. Please try again.");

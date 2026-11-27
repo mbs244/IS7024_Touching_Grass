@@ -1,35 +1,52 @@
+using System.Globalization;
 using Touching_Grass.Models;
 
 namespace Touching_Grass.Services;
 
-public sealed class WateringCalculatorService : IWateringCalculatorService
+public sealed class WateringCalculatorService(
+    OpenMeteoService openMeteoService,
+    VisualCrossingService visualCrossingService) : IWateringCalculatorService
 {
-    public const decimal MockEvapotranspirationInches = 0.60m;
-    public const decimal MockRainfallInches = 0.10m;
-
-    public Task<WaterRecommendation> CalculateAsync(
+    public async Task<WaterRecommendation> CalculateAsync(
         ZipLocation location,
         Plant plant,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var grossNeed = MockEvapotranspirationInches * plant.WaterFactor;
-        var netNeed = Math.Max(0m, grossNeed - MockRainfallInches);
-        var explanation =
-            $"{MockEvapotranspirationInches:0.00} in ET × {plant.WaterFactor:0.00} plant factor " +
-            $"− {MockRainfallInches:0.00} in rainfall = {netNeed:0.00} in net watering need.";
+        var period = WeatherPeriod.PreviousSevenCompleteDays(location);
+        var evapotranspirationTask = openMeteoService.GetEvapotranspirationAsync(
+            location,
+            period,
+            cancellationToken);
+        var rainfallTask = visualCrossingService.GetRainfallAsync(
+            location,
+            period,
+            cancellationToken);
+        await Task.WhenAll(evapotranspirationTask, rainfallTask);
 
-        return Task.FromResult(new WaterRecommendation
+        var evapotranspirationInches = (await evapotranspirationTask).TotalInches;
+        var rainfallInches = (await rainfallTask).TotalInches;
+        var grossNeed = evapotranspirationInches * plant.WaterFactor;
+        var netNeed = Math.Max(0m, grossNeed - rainfallInches);
+        var explanation = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0:0.00} in ET × {1:0.00} plant factor − {2:0.00} in rainfall = {3:0.00} in net watering need.",
+            evapotranspirationInches,
+            plant.WaterFactor,
+            rainfallInches,
+            netNeed);
+
+        return new WaterRecommendation
         {
             ZipCode = location.ZipCode,
             PlantDisplayName = $"{plant.CommonName} ({plant.ScientificName})",
-            EvapotranspirationInches = MockEvapotranspirationInches,
-            RainfallInches = MockRainfallInches,
+            EvapotranspirationInches = evapotranspirationInches,
+            RainfallInches = rainfallInches,
             PlantFactor = plant.WaterFactor,
             GrossNeedInches = grossNeed,
             NetNeedInches = netNeed,
             Explanation = explanation
-        });
+        };
     }
 }

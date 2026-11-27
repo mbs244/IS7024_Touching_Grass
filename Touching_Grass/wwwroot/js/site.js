@@ -12,6 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const isValid = typeof window.jQuery === 'function'
+            ? window.jQuery(form).valid()
+            : form.checkValidity();
+
+        if (!isValid) {
+            return;
+        }
+
         submitButton.disabled = true;
         submitLabel.textContent = 'Calculating…';
         submitSpinner.classList.remove('d-none');
