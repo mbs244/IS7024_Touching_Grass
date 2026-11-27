@@ -55,6 +55,12 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_3724A7A581474D739578CFF9C56E4A53 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D30C13988B4242B99ADC85C6F1D0E321 }}
 
+      - name: Azure Diagnostics
+        shell: pwsh
+        run: |
+          az account show
+          az webapp list --output table
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
