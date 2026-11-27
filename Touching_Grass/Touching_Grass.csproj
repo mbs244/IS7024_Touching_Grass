@@ -9,6 +9,8 @@
   <ItemGroup>
     <Compile Remove="Data\Migrations.SqlServerArchive\**" />
     <None Include="Data\Migrations.SqlServerArchive\**" />
+    <Compile Remove="Data\Migrations.MySqlArchive\**" />
+    <None Include="Data\Migrations.MySqlArchive\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +27,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.12" />
-    <PackageReference Include="MySql.EntityFrameworkCore" Version="10.0.12" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.6" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
   </ItemGroup>
 

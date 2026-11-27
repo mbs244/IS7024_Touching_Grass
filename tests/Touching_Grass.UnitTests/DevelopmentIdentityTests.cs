@@ -87,7 +87,7 @@ public sealed class DevelopmentIdentityTests
 
     private static WebApplicationFactory<Program> CreateFactory()
     {
-        Environment.SetEnvironmentVariable("MYSQLCONNSTR_localdb", null);
+        Environment.SetEnvironmentVariable("ConnectionStrings__DefaultConnection", null);
         return new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
             builder.UseSetting("environment", "Development");
