@@ -40,7 +40,7 @@ public class IndexModel : PageModel
         _waterStatusMessageService = waterStatusMessageService;
     }
 
-    [BindProperty(SupportsGet = true)]
+    [BindProperty]
     [Display(Name = "ZIP code")]
     [Required(ErrorMessage = "ZIP code is required.")]
     [RegularExpression(@"^\d{5}$", ErrorMessage = "Enter a valid five-digit ZIP code.")]
