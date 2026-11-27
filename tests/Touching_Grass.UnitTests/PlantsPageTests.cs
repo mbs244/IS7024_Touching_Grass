@@ -76,6 +76,24 @@ public sealed class PlantsPageTests
         Assert.Equal("Plant data is temporarily unavailable. Please try again.", page.ErrorMessage);
     }
 
+    [Fact]
+    public async Task OverlyLongSearchDoesNotQueryRepositoryAndShowsValidationMessage()
+    {
+        var repository = new StubPlantRepository([]);
+        var page = new PlantsModel(repository, NullLogger<PlantsModel>.Instance)
+        {
+            SearchTerm = new string('a', 101)
+        };
+
+        await page.OnGetAsync(CancellationToken.None);
+
+        Assert.False(page.HasSearched);
+        Assert.Equal("Enter 100 characters or fewer for plant name search.", page.ErrorMessage);
+        Assert.Null(page.NotFoundMessage);
+        Assert.Empty(page.Results);
+        Assert.Equal(0, repository.SearchCallCount);
+    }
+
     private sealed class StubPlantRepository : IPlantRepository
     {
         private readonly IReadOnlyList<Plant> _results;
@@ -107,5 +125,8 @@ public sealed class PlantsPageTests
                 ? Task.FromResult(_results)
                 : Task.FromException<IReadOnlyList<Plant>>(_exception);
         }
+
+        public Task<Plant?> FindByIdAsync(int id, CancellationToken cancellationToken = default) =>
+            Task.FromResult<Plant?>(null);
     }
 }

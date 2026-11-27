@@ -114,6 +114,7 @@ public sealed class LocalDataServiceTests
         using var fixture = new LocalDataFixture();
         var repository = new PlantRepository(fixture.Loader);
 
+        Assert.Empty(await repository.SearchAsync(null!));
         Assert.Empty(await repository.SearchAsync("   "));
         Assert.Empty(await repository.SearchAsync("sklujapouetllkjsda"));
     }

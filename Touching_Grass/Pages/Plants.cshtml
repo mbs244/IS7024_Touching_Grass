@@ -13,7 +13,7 @@
             <div class="card-body">
                 <div class="mb-3">
                     <label asp-for="SearchTerm" class="form-label">Plant name</label>
-                    <input asp-for="SearchTerm" class="form-control" aria-describedby="plant-search-help" />
+                    <input asp-for="SearchTerm" class="form-control" aria-describedby="plant-search-help" maxlength="100" />
                     <div id="plant-search-help" class="form-text">Enter all or part of a common or scientific name.</div>
                 </div>
                 <button type="submit" class="btn btn-primary">Search</button>

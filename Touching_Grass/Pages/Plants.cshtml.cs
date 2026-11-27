@@ -7,6 +7,7 @@ namespace Touching_Grass.Pages;
 
 public sealed class PlantsModel : PageModel
 {
+    private const int MaxSearchTermLength = 100;
     private readonly IPlantRepository _plantRepository;
     private readonly ILogger<PlantsModel> _logger;
 
@@ -32,6 +33,12 @@ public sealed class PlantsModel : PageModel
         SearchTerm = SearchTerm?.Trim() ?? string.Empty;
         if (SearchTerm.Length == 0)
         {
+            return;
+        }
+
+        if (SearchTerm.Length > MaxSearchTermLength)
+        {
+            ErrorMessage = $"Enter {MaxSearchTermLength} characters or fewer for plant name search.";
             return;
         }
 
