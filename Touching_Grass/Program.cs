@@ -74,6 +74,7 @@ builder.Services.AddHttpClient<VisualCrossingService>((services, client) =>
     })
     .RemoveAllLoggers();
 builder.Services.AddScoped<IWateringCalculatorService, WateringCalculatorService>();
+builder.Services.AddSingleton<IWaterStatusMessageService, WaterStatusMessageService>();
 
 var app = builder.Build();
 
