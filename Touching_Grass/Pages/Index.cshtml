@@ -4,41 +4,57 @@
     ViewData["Title"] = "Plantwise - Watering Guide";
 }
 
-<div class="row justify-content-center">
-    <div class="col-xl-9 col-lg-10">
-        <div class="plantwise-page-brand mb-3">
-            <img src="~/images/plant_wise_logo.png" alt="PlantWise logo" class="plantwise-page-brand__logo" />
-            <h1 class="display-5 mb-0">PlantWise</h1>
-        </div>
-        <p class="lead">Dynamic watering advice for your plants that knows the weather.</p>
-
-        <form method="post" class="card shadow-sm" id="watering-form">
-            <div class="card-body">
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-
-                <div class="mb-3">
-                    <label asp-for="ZipCode" class="form-label"></label>
-                    <input asp-for="ZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" aria-describedby="zip-help" />
-                    <div id="zip-help" class="form-text">Enter a supported five-digit USA ZIP code.</div>
-                    <span asp-validation-for="ZipCode" class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="PlantName" class="form-label"></label>
-                    <input asp-for="PlantName" class="form-control" autocomplete="off" data-plant-input aria-describedby="plant-help plant-search-status" aria-expanded="false" aria-autocomplete="list" />
-                    <input asp-for="SelectedPlantId" type="hidden" data-plant-id />
-                    <div class="form-text" id="plant-help">Type at least three characters to see common and scientific name suggestions.</div>
-                    <ul class="list-group mt-2 d-none" id="plant-suggestions" role="listbox" aria-label="Plant suggestions"></ul>
-                    <p class="small text-muted mt-2 mb-0 d-none" id="plant-search-status" role="status"></p>
-                    <span asp-validation-for="PlantName" class="text-danger"></span>
-                </div>
-
-                <button type="submit" class="btn btn-primary" data-submit-button>
-                    <span data-submit-label>Calculate watering need</span>
-                    <span class="spinner-border spinner-border-sm d-none" aria-hidden="true" data-submit-spinner></span>
-                </button>
+<section class="plantwise-homepage" aria-labelledby="homepage-title">
+    <div class="container">
+        <header class="plantwise-homepage__brand">
+            <div class="plantwise-page-brand mb-2">
+                <img src="~/images/plant_wise_logo.png" alt="PlantWise logo" class="plantwise-page-brand__logo" />
+                <p class="h4 mb-0">PlantWise</p>
             </div>
-        </form>
+            <p class="plantwise-homepage__tagline lead mb-0">Water smarter. Grow better.</p>
+        </header>
+
+        <div class="plantwise-homepage__hero-layout">
+            <div class="plantwise-homepage__hero-copy">
+                <div class="plantwise-homepage__hero">
+                    <p class="text-uppercase fw-semibold mb-3">Smarter care for every garden</p>
+                    <h1 id="homepage-title" class="display-4">Make every drop count.</h1>
+                    <p class="lead">Dynamic watering advice for your plants that knows the weather.</p>
+
+                    <form method="post" class="plantwise-homepage__start" id="watering-form">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ZipCode" class="form-label"></label>
+                            <input asp-for="ZipCode" class="form-control" inputmode="numeric" autocomplete="postal-code" aria-describedby="zip-help" />
+                            <div id="zip-help" class="form-text">Enter a supported five-digit USA ZIP code.</div>
+                            <span asp-validation-for="ZipCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="PlantName" class="form-label"></label>
+                            <input asp-for="PlantName" class="form-control" autocomplete="off" data-plant-input aria-describedby="plant-help plant-search-status" aria-expanded="false" aria-autocomplete="list" />
+                            <input asp-for="SelectedPlantId" type="hidden" data-plant-id />
+                            <div class="form-text" id="plant-help">Type at least three characters to see common and scientific name suggestions.</div>
+                            <ul class="list-group mt-2 d-none" id="plant-suggestions" role="listbox" aria-label="Plant suggestions"></ul>
+                            <p class="small text-muted mt-2 mb-0 d-none" id="plant-search-status" role="status"></p>
+                            <span asp-validation-for="PlantName" class="text-danger"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100" data-submit-button>
+                            <span data-submit-label>Calculate watering need</span>
+                            <span class="spinner-border spinner-border-sm d-none" aria-hidden="true" data-submit-spinner></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <figure class="plantwise-homepage__hero-image">
+                <img src="/images/plantwise-hero.png"
+                     alt="Lush indoor plants gathered in a bright, welcoming space"
+                     loading="eager" />
+            </figure>
+        </div>
 
         @if (Model.RecommendationError is not null)
         {
@@ -79,7 +95,7 @@
             </div>
         }
     </div>
-</div>
+</section>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
