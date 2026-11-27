@@ -21,6 +21,83 @@ body {
   margin-bottom: 60px;
 }
 
+.plantwise-app {
+  background: linear-gradient(180deg, #f6faf6 0%, #ffffff 22rem);
+  color: #223228;
+}
+
+.plantwise-navbar {
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom-color: rgba(111, 151, 111, 0.28) !important;
+}
+
+.plantwise-brand {
+  align-items: center;
+  color: #204f32 !important;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 0.55rem;
+  letter-spacing: 0.01em;
+}
+
+.plantwise-brand:hover,
+.plantwise-brand:focus-visible {
+  color: #173a25 !important;
+}
+
+.plantwise-brand__logo {
+  border-radius: 0.4rem;
+  height: 2rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.plantwise-brand__text {
+  line-height: 1;
+}
+
+.plantwise-nav-link {
+  color: #234029 !important;
+  font-weight: 500;
+}
+
+.plantwise-nav-link:hover,
+.plantwise-nav-link:focus-visible {
+  color: #173a25 !important;
+}
+
+.plantwise-main {
+  min-height: calc(100vh - 12.5rem);
+}
+
+.plantwise-footer {
+  background-color: rgba(242, 245, 238, 0.92);
+}
+
+.plantwise-footer a {
+  color: #1d603f;
+}
+
+.plantwise-footer a:hover,
+.plantwise-footer a:focus-visible {
+  color: #173a25;
+}
+
+.plantwise-page-brand {
+  align-items: center;
+  color: #204f32;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 0.6rem;
+}
+
+.plantwise-page-brand__logo {
+  border-radius: 0.45rem;
+  height: 2.25rem;
+  object-fit: contain;
+  width: auto;
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;

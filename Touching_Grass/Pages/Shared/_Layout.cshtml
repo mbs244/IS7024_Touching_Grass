@@ -9,11 +9,14 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Touching_Grass.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body class="plantwise-app">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light plantwise-navbar border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" href="/">PlantWise</a>
+                <a class="navbar-brand plantwise-brand" href="/" aria-label="PlantWise home">
+                    <img src="~/images/plant_wise_logo.png" alt="PlantWise logo" class="plantwise-brand__logo" />
+                    <span class="plantwise-brand__text">PlantWise</span>
+                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -21,24 +24,24 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="/">Watering Guide</a>
+                            <a class="nav-link plantwise-nav-link" href="/">Watering Guide</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Plants">Plant Search</a>
+                            <a class="nav-link plantwise-nav-link" asp-area="" asp-page="/Plants">Plant Search</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
+                            <a class="nav-link plantwise-nav-link" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/MyPlants/Index">My plants</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Account/Profile">My Profile</a></li>
+                            <li class="nav-item"><a class="nav-link plantwise-nav-link" asp-page="/MyPlants/Index">My plants</a></li>
+                            <li class="nav-item"><a class="nav-link plantwise-nav-link" asp-page="/Account/Profile">My Profile</a></li>
                             <li class="nav-item"><partial name="_Logout" /></li>
                         }
                         else
                         {
-                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Account/Login">Sign in</a></li>
-                            <li class="nav-item"><a class="nav-link text-dark" asp-page="/Account/Register">Create account</a></li>
+                            <li class="nav-item"><a class="nav-link plantwise-nav-link" asp-page="/Account/Login">Sign in</a></li>
+                            <li class="nav-item"><a class="nav-link plantwise-nav-link" asp-page="/Account/Register">Create account</a></li>
                         }
                     </ul>
                 </div>
@@ -46,12 +49,12 @@
         </nav>
     </header>
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="pb-3 plantwise-main">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted plantwise-footer">
         <div class="container">
             &copy; 2026 - PlantWise - <a asp-area="" asp-page="/Privacy">Privacy</a>
         </div>

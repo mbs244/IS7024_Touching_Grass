@@ -28,10 +28,10 @@ public sealed class HomepageNavigationIntegrationTests : IClassFixture<RazorPage
         var content = await response.Content.ReadAsStringAsync();
 
         response.EnsureSuccessStatusCode();
-        AssertLink(content, "navbar-brand", "/", "PlantWise");
-        AssertLink(content, "nav-link text-dark", "/", "Watering Guide");
-        AssertLink(content, "nav-link text-dark", "/Plants", "Plant Search");
-        AssertLink(content, "nav-link text-dark", "/Privacy", "Privacy");
+        AssertLink(content, "navbar-brand plantwise-brand", "/", "PlantWise");
+        AssertLink(content, "nav-link plantwise-nav-link", "/", "Watering Guide");
+        AssertLink(content, "nav-link plantwise-nav-link", "/Plants", "Plant Search");
+        AssertLink(content, "nav-link plantwise-nav-link", "/Privacy", "Privacy");
         Assert.Contains("navbar navbar-expand-sm navbar-toggleable-sm", content);
         Assert.Contains("navbar-toggler", content);
         Assert.Contains("data-bs-toggle=\"collapse\"", content);
